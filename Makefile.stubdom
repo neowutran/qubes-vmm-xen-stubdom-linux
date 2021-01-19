@@ -129,6 +129,30 @@ build/pulseaudio/config.status: build/pulseaudio/.patched  build/pulseaudio/src/
 build/padist/usr/bin/pulseaudio: build/pulseaudio/config.status
 	$(MAKE) install-strip -C build/pulseaudio DESTDIR=$(shell pwd)/build/padist
 
+build/libusb/.extracted: libusb-$(LIBUSB_VERSION).tar.bz2
+	rm -rf build/libusb
+	mkdir -p build/libusb
+	tar -C build/libusb --strip-components=1 -xf $<
+	touch $@
+
+build/libusb/config.status: build/libusb/.extracted
+	cd build/libusb && ./configure \
+			--disable-static \
+			--disable-udev \
+			--libdir=/lib
+
+build/libusb/.installed: build/libusb/config.status
+	$(MAKE) -C build/libusb
+	$(MAKE)	install-strip -C build/libusb DESTDIR=$(shell pwd)/build/padist
+	touch $@
+
+build/qrexec/agent/qrexec-agent:
+	rm -rf build/qrexec
+	mkdir -p build
+	cp -a qrexec build/
+	make BACKEND_VMM=xen -C build/qrexec/libqrexec all
+	make BACKEND_VMM=xen -C build/qrexec/agent qrexec-client-vm qrexec-agent qrexec-fork-server
+
 QEMU_PATCHES := $(shell $Q -l qemu)
 
 build/qemu/.extracted: qemu-$(QEMU_VERSION).tar.xz
