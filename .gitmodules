@@ -6,4 +6,4 @@
 	url = https://github.com/QubesOS/qubes-gui-agent-linux
 [submodule "usbproxy"]
 	path = usbproxy
-	url = https://github.com/QubesOS/qubes-app-linux-usb-proxy/
+	url = https://github.com/QubesOS/qubes-app-linux-usb-proxy
