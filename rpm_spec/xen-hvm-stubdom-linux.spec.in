@@ -1,7 +1,8 @@
 %define QEMU_VERSION 4.2.0
-%define LINUX_VERSION 5.4.30
+%define LINUX_VERSION 5.4.74
 %define BUSYBOX_VERSION 1.31.1
 %define PULSEAUDIO_VERSION 13.99.1
+%define LIBUSB_VERSION 1.0.23
 
 Name: xen-hvm-stubdom-linux
 Version: @VERSION@
@@ -68,6 +69,9 @@ BuildRequires: inotify-tools
 BuildRequires: gcc-c++ >= 6.4.1-1.qubes1
 %endif
 
+# qrexec
+BuildRequires: redhat-lsb-core
+
 Source0: %{name}-%{version}.tar.gz
 Source1: linux-%{LINUX_VERSION}.tar.xz
 Source2: qemu-%{QEMU_VERSION}.tar.xz
@@ -80,6 +84,12 @@ Source4: pulseaudio-%{PULSEAUDIO_VERSION}.tar.xz
 This package contains the files (i.e. kernel and rootfs) for a Linux based
 stubdom.
 
+%package full
+Summary: Linux stubdom files for Xen with additional services
+
+%description full
+This package contains the files (i.e. kernel and rootfs) for a Linux based
+stubdom. Full version includes qrexec-daemon, pulseaudio and libusb support.
 
 %prep
 %setup -q
@@ -87,16 +97,17 @@ cp %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} .
 
 
 %build
-make -f Makefile.stubdom %{?_smp_mflags}
-
-
-%install
-make -f Makefile.stubdom DESTDIR=${RPM_BUILD_ROOT} STUBDOM_BINDIR=/usr/libexec/xen/boot install
-
+make -f Makefile.stubdom DESTDIR=${RPM_BUILD_ROOT} all install
+make -f Makefile.stubdom clean
+make -f Makefile.stubdom DESTDIR=${RPM_BUILD_ROOT} full install
 
 %files
 /usr/libexec/xen/boot/qemu-stubdom-linux-rootfs
 /usr/libexec/xen/boot/qemu-stubdom-linux-kernel
+
+%files full
+/usr/libexec/xen/boot/qemu-stubdom-linux-full-rootfs
+/usr/libexec/xen/boot/qemu-stubdom-linux-full-kernel
 
 
 %changelog
