@@ -77,6 +77,7 @@ Source1: linux-%{LINUX_VERSION}.tar.xz
 Source2: qemu-%{QEMU_VERSION}.tar.xz
 Source3: busybox-%{BUSYBOX_VERSION}.tar.bz2
 Source4: pulseaudio-%{PULSEAUDIO_VERSION}.tar.xz
+Source5: libusb-%{LIBUSB_VERSION}.tar.bz2
 
 %define debug_package %{nil}
 
@@ -93,7 +94,7 @@ stubdom. Full version includes qrexec-daemon, pulseaudio and libusb support.
 
 %prep
 %setup -q
-cp %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} .
+cp %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} .
 
 
 %build
