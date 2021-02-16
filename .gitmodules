@@ -7,3 +7,6 @@
 [submodule "usbproxy"]
 	path = usbproxy
 	url = https://github.com/QubesOS/qubes-app-linux-usb-proxy
+[submodule "qrexec"]
+	path = qrexec
+	url = https://github.com/QubesOS/qubes-core-qrexec
