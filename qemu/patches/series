@@ -16,3 +16,4 @@ igd-fix-undefined-behaviour.patch
 igd-improve-legacy-vbios-handling.patch
 igd-move-enabling-opregion-access-to-libxl.patch
 seabios-python3.patch
+i386-load-kernel-on-xen-using-DMA.patch
