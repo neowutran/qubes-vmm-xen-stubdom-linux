@@ -250,7 +250,7 @@ build/qemu/i386-softmmu/qemu-system-i386: build/qemu/.patched build/qemu/config.
 
 LINUX_PATCHES := $(shell $Q -l linux)
 
-build/linux/.extracted: linux-$(LINUX_VERSION).tar.xz
+build/linux/.extracted: linux-$(LINUX_VERSION).tar
 	rm -rf build/linux
 	mkdir -p build/linux
 	tar -C build/linux --strip-components=1 -xf $<

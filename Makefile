@@ -19,7 +19,7 @@ URLS := \
     https://busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.bz2.sig \
     https://freedesktop.org/software/pulseaudio/releases/pulseaudio-$(PULSEAUDIO_VERSION).tar.xz
 
-ALL_URLS := $(patsubst %.sign,%.xz,$(patsubst %.sig,%,$(URLS))) $(filter %.sig, $(URLS)) $(filter %.sign, $(URLS))
+ALL_URLS := $(patsubst %.sign,%,$(patsubst %.sig,%,$(URLS))) $(filter %.sig, $(URLS)) $(filter %.sign, $(URLS))
 ALL_FILES_TMP := $(notdir $(ALL_URLS))
 
 ifneq ($(DISTFILES_MIRROR),)
@@ -41,9 +41,13 @@ dl/%: dl/%.sig keys/$$(firstword $$(subst -, ,$$*)).gpg
 		{ echo "Wrong signature on $@$(UNTRUSTED_SUFF)!"; exit 1; }
 	@mv $@$(UNTRUSTED_SUFF) $@
 
-dl/%.xz: dl/%.sign keys/$$(firstword $$(subst -, ,$$*)).gpg
-	@$(FETCH_CMD) $@$(UNTRUSTED_SUFF) $(filter %/$*.xz,$(ALL_URLS))
-	@gpgv --keyring $(word 2,$^) $< <(xzcat $@$(UNTRUSTED_SUFF)) 2>/dev/null || \
+dl/%: dl/%.sign keys/$$(firstword $$(subst -, ,$$*)).gpg
+	@$(FETCH_CMD) $@.xz$(UNTRUSTED_SUFF) $(filter %/$*,$(ALL_URLS)).xz
+	@if [ -f /usr/bin/qvm-run-vm ]; \
+		then qvm-run-vm --dispvm 2>/dev/null xzcat <$@.xz$(UNTRUSTED_SUFF) > $@$(UNTRUSTED_SUFF); \
+		else xzcat <$@.xz$(UNTRUSTED_SUFF) > $@$(UNTRUSTED_SUFF); fi
+	@rm -f $@.xz$(UNTRUSTED_SUFF)
+	@gpgv --keyring $(word 2,$^) $< $@$(UNTRUSTED_SUFF)|| \
 		{ echo "Wrong signature on $@$(UNTRUSTED_SUFF)!"; exit 1; }
 	@mv $@$(UNTRUSTED_SUFF) $@
 

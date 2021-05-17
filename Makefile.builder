@@ -6,7 +6,7 @@ include $(ORIG_SRC)/Makefile.vars
 
 INCLUDED_SOURCES = \
 	qemu-$(QEMU_VERSION).tar.xz \
-	linux-$(LINUX_VERSION).tar.xz \
+	linux-$(LINUX_VERSION).tar \
 	busybox-$(BUSYBOX_VERSION).tar.bz2 \
 	pulseaudio-$(PULSEAUDIO_VERSION).tar.xz
 
@@ -17,3 +17,4 @@ endif
 $(INCLUDED_SOURCES): PACKAGE=$@
 $(INCLUDED_SOURCES):
 	cp $(ORIG_SRC)/dl/$(PACKAGE) $(CHROOT_DIR)$(DIST_SRC)
+# vim: set ft=make:

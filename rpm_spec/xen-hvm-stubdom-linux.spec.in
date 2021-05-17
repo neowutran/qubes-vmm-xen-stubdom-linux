@@ -69,7 +69,7 @@ BuildRequires: gcc-c++ >= 6.4.1-1.qubes1
 %endif
 
 Source0: %{name}-%{version}.tar.gz
-Source1: linux-%{LINUX_VERSION}.tar.xz
+Source1: linux-%{LINUX_VERSION}.tar
 Source2: qemu-%{QEMU_VERSION}.tar.xz
 Source3: busybox-%{BUSYBOX_VERSION}.tar.bz2
 Source4: pulseaudio-%{PULSEAUDIO_VERSION}.tar.xz
