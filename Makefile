@@ -9,7 +9,9 @@ include Makefile.vars
 
 UNTRUSTED_SUFF := .UNTRUSTED
 
-FETCH_CMD := wget --no-use-server-timestamps -q -O
+ifeq ($(FETCH_CMD),)
+$(error "You can not run this Makefile without having FETCH_CMD defined")
+endif
 
 URLS := \
     https://download.qemu.org/qemu-$(QEMU_VERSION).tar.xz.sig \
