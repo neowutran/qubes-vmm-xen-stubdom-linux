@@ -11,7 +11,7 @@ void usage(char *arg0) {
             arg0);
     fprintf(stderr, "\n");
     fprintf(stderr, "Open <file-to-add> and sends it to <socket> using SCM_RIGHTS.\n");
-    fprintf(stderr, "Use /dev/fd/N as <file-to-add> to send already open FD.\n");
+    fprintf(stderr, "Use /dev/fd/N or /proc/self/fd/N as <file-to-add> to send already open FD.\n");
     fprintf(stderr, "If <read-until> is provided, data is read from the socket,\n"
                     "until <read-until> or EOF is received; otherwise it's\n"
                     "closed immediately after sending the message.\n");
@@ -42,7 +42,8 @@ int main(int argc, char **argv) {
     if (connect(socket_fd, (struct sockaddr*)&addr, sizeof(addr)) == -1)
         err(1, "connect");
 
-    if (sscanf(argv[2], "/dev/fd/%d", &fd) != 1)
+    if (sscanf(argv[2], "/dev/fd/%d", &fd) != 1 &&
+            sscanf(argv[2], "/proc/self/fd/%d", &fd) != 1)
         fd = open(argv[2], O_RDWR);
 
     if (fd == -1)
