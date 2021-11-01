@@ -1,4 +1,4 @@
-%define QEMU_VERSION 4.2.0
+%define QEMU_VERSION 6.1.0
 %define LINUX_VERSION 5.10.76
 %define BUSYBOX_VERSION 1.31.1
 %define PULSEAUDIO_VERSION 14.2
@@ -24,6 +24,7 @@ BuildRequires: xen-devel
 BuildRequires: glib2-devel
 BuildRequires: autoconf
 BuildRequires: automake
+BuildRequires: ninja-build
 %if 0%{?rhel} >= 8
 BuildRequires: edk2-ovmf
 %else

@@ -1,0 +1,38 @@
+From f3d9b603de06e81b630c1a755330b80b87c72af8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
+ <frederic.pierret@qubes-os.org>
+Date: Mon, 1 Nov 2021 18:09:33 +0100
+Subject: [PATCH] xen: handle CONFIG_STUBDOM
+
+Adapted from https://github.com/QubesOS/qubes-vmm-xen-stubdom-linux/blob/2a814bd1edaf549ef9252eb6747aa6137abf9831/qemu/patches/qemu-xen-h.patch
+
+Authors: HW42
+
+Contributors: fepitre
+---
+ include/hw/xen/xen.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/include/hw/xen/xen.h b/include/hw/xen/xen.h
+index 0f9962b1c1..a518988e77 100644
+--- a/include/hw/xen/xen.h
++++ b/include/hw/xen/xen.h
+@@ -20,6 +20,15 @@ extern uint32_t xen_domid;
+ extern enum xen_mode xen_mode;
+ extern bool xen_domid_restrict;
+ 
++static inline int xen_stubdom_enable(void)
++{
++#ifdef CONFIG_STUBDOM
++    return 1;
++#else
++    return 0;
++#endif
++}
++
+ int xen_pci_slot_get_pirq(PCIDevice *pci_dev, int irq_num);
+ void xen_piix3_set_irq(void *opaque, int irq_num, int level);
+ void xen_piix_pci_write_config_client(uint32_t address, uint32_t val, int len);
+-- 
+2.31.1
+

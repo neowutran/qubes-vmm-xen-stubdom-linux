@@ -1,7 +1,7 @@
-From f913ed9b8678d6344e43ef7ef02e98994276b0e1 Mon Sep 17 00:00:00 2001
+From b6516948b3bdacc40b61d61d83e90d571d69e9ec Mon Sep 17 00:00:00 2001
 From: Grzegorz Uriasz <gorbak25@gmail.com>
 Date: Thu, 16 Apr 2020 00:26:22 +0200
-Subject: IGD improve legacy vbios handling
+Subject: [PATCH] IGD improve legacy vbios handling
 
 The current method of getting the vbios is broken - it just isn't working on any device I've tested - the reason
 for this is explained in the previous patch. The vbios is polymorphic and getting a proper unmodified copy is
@@ -35,10 +35,10 @@ Signed-off-by: Grzegorz Uriasz <gorbak25@gmail.com>
  3 files changed, 52 insertions(+), 6 deletions(-)
 
 diff --git a/hw/xen/xen_pt.c b/hw/xen/xen_pt.c
-index a1706181cc..4c9618ea3a 100644
+index 76f169e454..b12dca023d 100644
 --- a/hw/xen/xen_pt.c
 +++ b/hw/xen/xen_pt.c
-@@ -483,8 +483,12 @@ static int xen_pt_register_regions(XenPCIPassthroughState *s, uint16_t *cmd)
+@@ -496,8 +496,12 @@ static int xen_pt_register_regions(XenPCIPassthroughState *s, uint16_t *cmd)
                     i, r_size, r->base_addr, type);
      }
  
@@ -54,7 +54,7 @@ index a1706181cc..4c9618ea3a 100644
  
          /* Re-set BAR reported by OS, otherwise ROM can't be read. */
 diff --git a/hw/xen/xen_pt_graphics.c b/hw/xen/xen_pt_graphics.c
-index 135c8df1e7..7d46e9c209 100644
+index a3bc7e3921..6d5241651a 100644
 --- a/hw/xen/xen_pt_graphics.c
 +++ b/hw/xen/xen_pt_graphics.c
 @@ -129,7 +129,7 @@ int xen_pt_unregister_vga_regions(XenHostPCIDevice *dev)
@@ -126,19 +126,19 @@ index 135c8df1e7..7d46e9c209 100644
          return;
      }
  
-@@ -207,6 +248,7 @@ void xen_pt_setup_vga(XenPCIPassthroughState *s, XenHostPCIDevice *dev,
+@@ -223,6 +264,7 @@ void xen_pt_setup_vga(XenPCIPassthroughState *s, XenHostPCIDevice *dev,
  
      /* Currently we fixed this address as a primary for legacy BIOS. */
-     cpu_physical_memory_rw(0xc0000, bios, bios_size, 1);
+     cpu_physical_memory_write(0xc0000, bios, bios_size);
 +    XEN_PT_LOG(&s->dev, "Legacy VBIOS registered\n");
  }
  
  uint32_t igd_read_opregion(XenPCIPassthroughState *s)
 diff --git a/hw/xen/xen_pt_load_rom.c b/hw/xen/xen_pt_load_rom.c
-index e6f4592dff..3cde3a51ec 100644
+index f71ef54b98..0437a18e82 100644
 --- a/hw/xen/xen_pt_load_rom.c
 +++ b/hw/xen/xen_pt_load_rom.c
-@@ -71,7 +71,7 @@ void *pci_assign_dev_load_option_rom(PCIDevice *dev,
+@@ -75,7 +75,7 @@ void *pci_assign_dev_load_option_rom(PCIDevice *dev,
          goto close_rom;
      }
  
@@ -148,5 +148,5 @@ index e6f4592dff..3cde3a51ec 100644
      *size = st.st_size;
  close_rom:
 -- 
-2.26.1
+2.31.1
 

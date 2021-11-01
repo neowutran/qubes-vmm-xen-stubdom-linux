@@ -1,16 +1,32 @@
-Index: qemu/hw/xen/xen-host-pci-device.c
-===================================================================
---- qemu.orig/hw/xen/xen-host-pci-device.c
-+++ qemu/hw/xen/xen-host-pci-device.c
-@@ -10,6 +10,7 @@
+From c12992d7667031e3d7fd5669ec25ed4b18f273a1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
+ <frederic.pierret@qubes-os.org>
+Date: Mon, 1 Nov 2021 18:30:55 +0100
+Subject: [PATCH] xen: fix stubdom PCI addr
+
+Adapted from https://github.com/QubesOS/qubes-vmm-xen-stubdom-linux/blob/2a814bd1edaf549ef9252eb6747aa6137abf9831/qemu/patches/stubdom-pci-addr-fix.patch
+
+Author: marmarek
+
+Contributors: HW42, fepitre
+---
+ hw/xen/xen-host-pci-device.c | 77 +++++++++++++++++++++++++++++++++++-
+ hw/xen/xen-host-pci-device.h |  6 +++
+ 2 files changed, 82 insertions(+), 1 deletion(-)
+
+diff --git a/hw/xen/xen-host-pci-device.c b/hw/xen/xen-host-pci-device.c
+index 8c6e9a1716..2619cb1a09 100644
+--- a/hw/xen/xen-host-pci-device.c
++++ b/hw/xen/xen-host-pci-device.c
+@@ -9,6 +9,7 @@
+ #include "qemu/osdep.h"
  #include "qapi/error.h"
- #include "qemu-common.h"
  #include "qemu/cutils.h"
 +#include "hw/xen/xen-legacy-backend.h"
  #include "xen-host-pci-device.h"
  
  #define XEN_HOST_PCI_MAX_EXT_CAP \
-@@ -34,13 +35,76 @@
+@@ -33,13 +34,76 @@
  #define IORESOURCE_PREFETCH     0x00001000      /* No side effects */
  #define IORESOURCE_MEM_64       0x00100000
  
@@ -88,13 +104,13 @@ Index: qemu/hw/xen/xen-host-pci-device.c
      assert(rc >= 0 && rc < size);
  }
  
-@@ -343,6 +407,17 @@ void xen_host_pci_device_get(XenHostPCID
+@@ -342,6 +406,17 @@ void xen_host_pci_device_get(XenHostPCIDevice *d, uint16_t domain,
      d->dev = dev;
      d->func = func;
  
 +    if (xen_stubdom_enable()) {
-+        xen_host_pci_fill_local_addr(d, &err);
-+        if (err)
++        xen_host_pci_fill_local_addr(d, errp);
++        if (*errp)
 +            goto error;
 +    } else {
 +        d->local_domain = d->domain;
@@ -103,13 +119,13 @@ Index: qemu/hw/xen/xen-host-pci-device.c
 +        d->local_func = d->func;
 +    }
 +
-     xen_host_pci_config_open(d, &err);
-     if (err) {
+     xen_host_pci_config_open(d, errp);
+     if (*errp) {
          goto error;
-Index: qemu/hw/xen/xen-host-pci-device.h
-===================================================================
---- qemu.orig/hw/xen/xen-host-pci-device.h
-+++ qemu/hw/xen/xen-host-pci-device.h
+diff --git a/hw/xen/xen-host-pci-device.h b/hw/xen/xen-host-pci-device.h
+index 4d8d34ecb0..270dcb27f7 100644
+--- a/hw/xen/xen-host-pci-device.h
++++ b/hw/xen/xen-host-pci-device.h
 @@ -23,6 +23,12 @@ typedef struct XenHostPCIDevice {
      uint8_t dev;
      uint8_t func;
@@ -123,3 +139,6 @@ Index: qemu/hw/xen/xen-host-pci-device.h
      uint16_t vendor_id;
      uint16_t device_id;
      uint32_t class_code;
+-- 
+2.31.1
+

@@ -1,0 +1,65 @@
+From 0327a4b93312bc29131c5caf25bc0d1562a74859 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
+ <frederic.pierret@qubes-os.org>
+Date: Mon, 1 Nov 2021 18:40:04 +0100
+Subject: [PATCH] Register ich6 ich9 soundhw
+
+Adapted from https://github.com/QubesOS/qubes-vmm-xen-stubdom-linux/blob/2a814bd1edaf549ef9252eb6747aa6137abf9831/qemu/patches/qemu-register-ich6-ich9-soundhw.patch
+
+Author: easydozen
+
+Contributors: fepitre
+---
+ hw/audio/intel-hda.c | 15 +++++++++++++++
+ hw/audio/soundhw.c   |  2 +-
+ 2 files changed, 16 insertions(+), 1 deletion(-)
+
+diff --git a/hw/audio/intel-hda.c b/hw/audio/intel-hda.c
+index 4330213fff..4513ea9b22 100644
+--- a/hw/audio/intel-hda.c
++++ b/hw/audio/intel-hda.c
+@@ -1318,6 +1318,19 @@ static int intel_hda_and_codec_init(PCIBus *bus)
+     return 0;
+ }
+ 
++static int intel_ich9_and_codec_init(PCIBus *bus)
++{
++    DeviceState *controller;
++    BusState *hdabus;
++    DeviceState *codec;
++
++    controller = DEVICE(pci_create_simple(bus, -1, "ich9-intel-hda"));
++    hdabus = QLIST_FIRST(&controller->child_bus);
++    codec = qdev_new("hda-duplex");
++    qdev_realize_and_unref(codec, hdabus, &error_fatal);
++    return 0;
++}
++
+ static void intel_hda_register_types(void)
+ {
+     type_register_static(&hda_codec_bus_info);
+@@ -1326,6 +1339,8 @@ static void intel_hda_register_types(void)
+     type_register_static(&intel_hda_info_ich9);
+     type_register_static(&hda_codec_device_type_info);
+     pci_register_soundhw("hda", "Intel HD Audio", intel_hda_and_codec_init);
++    pci_register_soundhw("ich6", "ich6 Intel HD Audio", intel_hda_and_codec_init);
++    pci_register_soundhw("ich9", "ich9 Intel HD Audio", intel_ich9_and_codec_init);
+ }
+ 
+ type_init(intel_hda_register_types)
+diff --git a/hw/audio/soundhw.c b/hw/audio/soundhw.c
+index 173b674ff5..4327bea1c5 100644
+--- a/hw/audio/soundhw.c
++++ b/hw/audio/soundhw.c
+@@ -42,7 +42,7 @@ struct soundhw {
+     } init;
+ };
+ 
+-static struct soundhw soundhw[9];
++static struct soundhw soundhw[11];
+ static int soundhw_count;
+ 
+ void isa_register_soundhw(const char *name, const char *descr,
+-- 
+2.31.1
+

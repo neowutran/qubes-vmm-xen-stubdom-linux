@@ -1,0 +1,59 @@
+From 25385e2ca28e09ec384e797a5cb57409a0a1cd0b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
+ <frederic.pierret@qubes-os.org>
+Date: Mon, 1 Nov 2021 18:08:03 +0100
+Subject: [PATCH] configure: add enable-stubdom
+
+Adapted from https://github.com/QubesOS/qubes-vmm-xen-stubdom-linux/blob/2a814bd1edaf549ef9252eb6747aa6137abf9831/qemu/patches/qemu-configure.patch
+
+Author: HW42
+
+Contributors: fepitre
+---
+ configure | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/configure b/configure
+index 9a79a004d7..47fbaa0ace 100755
+--- a/configure
++++ b/configure
+@@ -342,6 +342,7 @@ pvrdma="$default_feature"
+ gprof="no"
+ debug_tcg="no"
+ debug="no"
++stubdom="no"
+ sanitizers="no"
+ tsan="no"
+ fortify_source="$default_feature"
+@@ -1172,6 +1173,8 @@ for opt do
+   ;;
+   --enable-pie) pie="yes"
+   ;;
++  --enable-stubdom) stubdom="yes"
++  ;;
+   --disable-pie) pie="no"
+   ;;
+   --enable-werror) werror="yes"
+@@ -1925,6 +1928,7 @@ disabled with --disable-FEATURE, default is enabled if available
+   usb-redir       usb network redirection support
+   lzo             support of lzo compression library
+   snappy          support of snappy compression library
++  enable-stubdom  support for Xen stubdom
+   bzip2           support of bzip2 compression library
+                   (for reading bzip2-compressed dmg images)
+   lzfse           support of lzfse compression library
+@@ -4705,6 +4709,11 @@ if test "$qom_cast_debug" = "yes" ; then
+   echo "CONFIG_QOM_CAST_DEBUG=y" >> $config_host_mak
+ fi
+ 
++# stubdom support
++if test "$stubdom" = "yes"; then
++  echo "CONFIG_STUBDOM=y" >> $config_host_mak
++fi
++
+ echo "CONFIG_COROUTINE_BACKEND=$coroutine" >> $config_host_mak
+ if test "$coroutine_pool" = "yes" ; then
+   echo "CONFIG_COROUTINE_POOL=1" >> $config_host_mak
+-- 
+2.31.1
+

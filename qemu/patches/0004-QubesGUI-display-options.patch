@@ -1,0 +1,171 @@
+From 9dd9feb740ce45da8d84a2b1ce6d47b7609a3317 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
+ <frederic.pierret@qubes-os.org>
+Date: Mon, 1 Nov 2021 18:17:55 +0100
+Subject: [PATCH] QubesGUI display options
+
+Adapted from https://github.com/QubesOS/qubes-gui-agent-xen-hvm-stubdom/blob/29c0b1bb9a1b32a69b040bb83767f461eb7bd418/gui-agent-qemu/qemu-glue.patch
+
+Author: marmarek
+
+Contributors: HW42, fepitre
+---
+ hw/display/vga.c     |  2 ++
+ include/ui/console.h |  6 ++++++
+ meson.build          |  8 ++++++++
+ qapi/ui.json         | 21 +++++++++++++++++++--
+ ui/console.c         |  5 ++++-
+ ui/meson.build       |  3 +++
+ 6 files changed, 42 insertions(+), 3 deletions(-)
+
+diff --git a/hw/display/vga.c b/hw/display/vga.c
+index 9d1f66af40..bed6f6aaed 100644
+--- a/hw/display/vga.c
++++ b/hw/display/vga.c
+@@ -1555,6 +1555,8 @@ static void vga_draw_graphic(VGACommonState *s, int full_update)
+     } else {
+         share_surface = false;
+     }
++    /* XXX: Qubes GUI can't use a shared buffer */
++    share_surface = false;
+ 
+     if (s->line_offset != s->last_line_offset ||
+         disp_width != s->last_width ||
+diff --git a/include/ui/console.h b/include/ui/console.h
+index b30b63976a..f89676a478 100644
+--- a/include/ui/console.h
++++ b/include/ui/console.h
+@@ -117,6 +117,7 @@ typedef struct DisplaySurface {
+     GLenum gltype;
+     GLuint texture;
+ #endif
++    uint32_t *xen_refs;
+ } DisplaySurface;
+ 
+ typedef struct QemuUIInfo {
+@@ -359,6 +360,11 @@ static inline pixman_format_code_t surface_format(DisplaySurface *s)
+     return s->format;
+ }
+ 
++static inline uint32_t *surface_xen_refs(DisplaySurface *s)
++{
++    return s->xen_refs;
++}
++
+ typedef uint32_t console_ch_t;
+ 
+ static inline void console_write_ch(console_ch_t *dest, uint32_t ch)
+diff --git a/meson.build b/meson.build
+index b3e7ec0e92..aab4e2fb3e 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1197,6 +1197,13 @@ endif
+ have_host_block_device = (targetos != 'darwin' or
+     cc.has_header('IOKit/storage/IOMedia.h'))
+ 
++vchan_xen = dependency('vchan-xen', required: true, method: 'pkg-config')
++
++add_project_arguments(
++  '-iquote', meson.current_source_dir() / 'ui' / 'gui-agent' / 'include',
++  language: ['c', 'cpp', 'objc']
++)
++
+ #################
+ # config-host.h #
+ #################
+@@ -3075,6 +3082,7 @@ summary_info += {'bpf support': libbpf.found()}
+ # TODO: add back protocol and server version
+ summary_info += {'spice support':     config_host.has_key('CONFIG_SPICE')}
+ summary_info += {'rbd support':       rbd.found()}
++summary_info += {'libvchan support':  vchan_xen.found()}
+ summary_info += {'xfsctl support':    config_host.has_key('CONFIG_XFS')}
+ summary_info += {'smartcard support': cacard.found()}
+ summary_info += {'U2F support':       u2f.found()}
+diff --git a/qapi/ui.json b/qapi/ui.json
+index fd9677d48e..5e1c086d9a 100644
+--- a/qapi/ui.json
++++ b/qapi/ui.json
+@@ -1092,6 +1092,21 @@
+ { 'struct'  : 'DisplayCurses',
+   'data'    : { '*charset'       : 'str' } }
+ 
++##
++# @DisplayQubesGUI:
++#
++# QubesGUI display options.
++#
++# @log-level: Log level
++# @domid: Domain ID of backend (gui-daemon)
++#
++# Since: 3.0
++#
++##
++{ 'struct'  : 'DisplayQubesGUI',
++  'data'    : { '*log-level': 'int',
++                'domid'     : 'int' } }
++
+ ##
+ # @DisplayType:
+ #
+@@ -1139,7 +1154,8 @@
+               'if': 'defined(CONFIG_OPENGL) && defined(CONFIG_GBM)' },
+     { 'name': 'curses', 'if': 'defined(CONFIG_CURSES)' },
+     { 'name': 'cocoa', 'if': 'defined(CONFIG_COCOA)' },
+-    { 'name': 'spice-app', 'if': 'defined(CONFIG_SPICE)'} ] }
++    { 'name': 'spice-app', 'if': 'defined(CONFIG_SPICE)'},
++    { 'name': 'qubes-gui'} ] }
+ 
+ ##
+ # @DisplayOptions:
+@@ -1167,7 +1183,8 @@
+       'gtk': { 'type': 'DisplayGTK', 'if': 'defined(CONFIG_GTK)' },
+       'curses': { 'type': 'DisplayCurses', 'if': 'defined(CONFIG_CURSES)' },
+       'egl-headless': { 'type': 'DisplayEGLHeadless',
+-                        'if': 'defined(CONFIG_OPENGL) && defined(CONFIG_GBM)' }
++                        'if': 'defined(CONFIG_OPENGL) && defined(CONFIG_GBM)' },
++      'qubes-gui': { 'type': 'DisplayQubesGUI' }
+   }
+ }
+ 
+diff --git a/ui/console.c b/ui/console.c
+index 1103b65314..ba2689406b 100644
+--- a/ui/console.c
++++ b/ui/console.c
+@@ -24,6 +24,7 @@
+ 
+ #include "qemu/osdep.h"
+ #include "ui/console.h"
++#include "qubes-gui-qemu.h"
+ #include "hw/qdev-core.h"
+ #include "qapi/error.h"
+ #include "qapi/qapi-commands-ui.h"
+@@ -1392,9 +1393,11 @@ DisplaySurface *qemu_create_displaysurface(int width, int height)
+ 
+     trace_displaysurface_create(surface, width, height);
+     surface->format = PIXMAN_x8r8g8b8;
++    uint8_t *data = qubesgui_alloc_surface_data(width, height, &surface->xen_refs);
++    assert(data != NULL);
+     surface->image = pixman_image_create_bits(surface->format,
+                                               width, height,
+-                                              NULL, width * 4);
++                                              (uint32_t *)data, width * 4);
+     assert(surface->image != NULL);
+     surface->flags = QEMU_ALLOCATED_FLAG;
+ 
+diff --git a/ui/meson.build b/ui/meson.build
+index a3a187d633..57c83c717f 100644
+--- a/ui/meson.build
++++ b/ui/meson.build
+@@ -103,6 +103,9 @@ if config_host.has_key('CONFIG_SPICE') and config_host.has_key('CONFIG_GIO')
+   ui_modules += {'spice-app': spice_ss}
+ endif
+ 
++
++subdir('gui-agent')
++
+ keymap_gen = find_program('keycodemapdb/tools/keymap-gen')
+ 
+ keymaps = [
+-- 
+2.31.1
+

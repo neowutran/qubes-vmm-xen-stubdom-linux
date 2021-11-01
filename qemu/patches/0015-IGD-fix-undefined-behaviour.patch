@@ -1,7 +1,7 @@
-From 9d93dc9ee9a80a01afec68fae7dd97d0b3b84b29 Mon Sep 17 00:00:00 2001
+From 8cfeed23fc6499bb7b669e62786b5adf2649a522 Mon Sep 17 00:00:00 2001
 From: Grzegorz Uriasz <gorbak25@gmail.com>
 Date: Wed, 15 Apr 2020 23:27:09 +0200
-Subject: IGD fix undefined behaviour
+Subject: [PATCH] IGD fix undefined behaviour
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -37,10 +37,10 @@ Signed-off-by: Grzegorz Uriasz <gorbak25@gmail.com>
  1 file changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/hw/xen/xen_pt_load_rom.c b/hw/xen/xen_pt_load_rom.c
-index e6a86ca818..e6f4592dff 100644
+index 03422a8a71..f71ef54b98 100644
 --- a/hw/xen/xen_pt_load_rom.c
 +++ b/hw/xen/xen_pt_load_rom.c
-@@ -44,12 +44,12 @@ void *pci_assign_dev_load_option_rom(PCIDevice *dev,
+@@ -38,12 +38,12 @@ void *pci_assign_dev_load_option_rom(PCIDevice *dev,
      fp = fopen(rom_file, "r+");
      if (fp == NULL) {
          if (errno != ENOENT) {
@@ -55,8 +55,8 @@ index e6a86ca818..e6f4592dff 100644
          goto close_rom;
      }
  
-@@ -65,10 +65,9 @@ void *pci_assign_dev_load_option_rom(PCIDevice *dev,
-     memset(ptr, 0xff, st.st_size);
+@@ -69,10 +69,9 @@ void *pci_assign_dev_load_option_rom(PCIDevice *dev,
+     memset(ptr, 0xff, dev->romsize);
  
      if (!fread(ptr, 1, st.st_size, fp)) {
 -        error_report("pci-assign: Cannot read from host %s", rom_file);
@@ -70,5 +70,5 @@ index e6a86ca818..e6f4592dff 100644
      }
  
 -- 
-2.26.1
+2.31.1
 
