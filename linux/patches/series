@@ -1,8 +1,8 @@
-pci_op-cleanup.patch
 0001-tty-hvc-setup-hvc-consoles-in-RAW-mode-by-default.patch
-xsa155-linux-0008-xen-Add-RING_COPY_RESPONSE.patch
-xsa155-linux44-0009-xen-netfront-copy-response-out-of-shared-buffer-befo.patch
-xsa155-linux44-0010-xen-netfront-do-not-use-data-already-exposed-to-back.patch
-xsa155-linux-0011-xen-netfront-add-range-check-for-Tx-response-id.patch
-xsa155-linux312-0012-xen-blkfront-make-local-copy-of-response-before-usin.patch
-xsa155-linux44-0013-xen-blkfront-prepare-request-locally-only-then-put-i.patch
+0007-xen-Add-RING_COPY_RESPONSE.patch
+0008-xen-netfront-copy-response-out-of-shared-buffer-befo.patch
+0009-xen-netfront-do-not-use-data-already-exposed-to-back.patch
+0010-xen-netfront-add-range-check-for-Tx-response-id.patch
+0011-xen-blkfront-make-local-copy-of-response-before-usin.patch
+0012-xen-blkfront-prepare-request-locally-only-then-put-i.patch
+pci_op-cleanup.patch
