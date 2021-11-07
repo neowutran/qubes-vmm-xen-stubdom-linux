@@ -15,4 +15,5 @@
 0015-IGD-fix-undefined-behaviour.patch
 0016-IGD-improve-legacy-vbios-handling.patch
 0017-IGD-move-enabling-opregion-access-to-libxl.patch
+0018-pc-bios-ignore-prebuilt-binaries.patch
 seabios-python3.patch
