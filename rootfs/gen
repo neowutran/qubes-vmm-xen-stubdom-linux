@@ -67,7 +67,7 @@ if [[ -e "$PWD/build/qrexec/agent/qrexec-agent" ]]; then
     fi
     inst build/padist/usr/local/bin/pulseaudio /bin/pulseaudio
     for mod in build/padist/lib/module-*.so; do
-	inst "$mod" /lib/$(basename "$mod")
+	inst "$mod" "/lib/$(basename "$mod")"
     done
 fi
 
@@ -87,8 +87,8 @@ inst helpers/qusb.sh /bin/qusb.sh
 inst build/qrexec/agent/qrexec-agent /bin/qrexec-agent
 inst build/qrexec/agent/qrexec-client-vm /bin/qrexec-client-vm
 inst build/qrexec/agent/qrexec-fork-server /bin/qrexec-fork-server
-echo "root:x:0:0:root:/root:/bin/sh" > $rootfs_dir/etc/passwd
-echo "bus/usb/00[1-9]/00[2-9] 0:0 660 *sh /bin/qusb.sh" > $rootfs_dir/etc/mdev.conf 
+echo "root:x:0:0:root:/root:/bin/sh" > "$rootfs_dir"/etc/passwd
+echo "bus/usb/00[1-9]/00[2-9] 0:0 660 *sh /bin/qusb.sh" > "$rootfs_dir"/etc/mdev.conf 
 fi
 
 for i in write watch rm ls list; do
@@ -107,30 +107,30 @@ inst "rootfs/qemu-ifup" "/etc/qemu-ifup"
 inst "rootfs/qemu-ifdown" "/etc/qemu-ifdown"
 inst "rootfs/init" "/init"
 
-mkdir $rootfs_dir/lib.new
-(find $rootfs_dir/{,usr/,usr/local/}lib{,64} -type f -print0 || true) | xargs -0r mv -t $rootfs_dir/lib.new/
-rm -rf $rootfs_dir/{,usr/,usr/local/}lib{,64}
+mkdir "$rootfs_dir"/lib.new
+(find "$rootfs_dir"/{,usr/,usr/local/}lib{,64} -type f -print0 || true) | xargs -0r mv -t "$rootfs_dir"/lib.new/
+rm -rf "${rootfs_dir:?}"/{,usr/,usr/local/}lib{,64}
 IFS=:
 for d in $LD_LIBRARY_PATH; do
-(find $rootfs_dir/$d -type f -print0 || true) | xargs -0r mv -t $rootfs_dir/lib.new/
-rm -rf $rootfs_dir/$d
+(find "$rootfs_dir/$d" -type f -print0 || true) | xargs -0r mv -t "$rootfs_dir"/lib.new/
+rm -rf "${rootfs_dir:?}/$d"
 done
 unset IFS
-mv $rootfs_dir/lib{.new,}
+mv "$rootfs_dir"/lib{.new,}
 # possible leftovers from local $LD_LIBRARY_PATH + dracut-install
-rm -rf "$rootfs_dir/home"
-touch $rootfs_dir/etc/ld.so.conf
-/sbin/ldconfig -r $rootfs_dir /lib
-ln -s lib $rootfs_dir/lib64
+rm -rf "${rootfs_dir:?}"/home
+touch "$rootfs_dir"/etc/ld.so.conf
+/sbin/ldconfig -r "$rootfs_dir" /lib
+ln -s lib "$rootfs_dir"/lib64
 
 if [[ -e "$PWD/build/libusb/.installed" ]]; then
-ln -s tmp $rootfs_dir/var
-mkdir -p $rootfs_dir/etc/qubes-rpc
-mkdir -p $rootfs_dir/usr/lib/qubes
+ln -s tmp "$rootfs_dir"/var
+mkdir -p "$rootfs_dir"/etc/qubes-rpc
+mkdir -p "$rootfs_dir"/usr/lib/qubes
 inst usbproxy/src/usb-import /usr/lib/qubes/usb-import
 inst qrexec/lib/qubes-rpc-multiplexer /usr/lib/qubes/qubes-rpc-multiplexer
 inst usbproxy/qubes-rpc/qubes.USBAttach /etc/qubes-rpc/qubes.USBAttach
-chmod a+x $rootfs_dir/etc/qubes-rpc/qubes.USBAttach
+chmod a+x "$rootfs_dir"/etc/qubes-rpc/qubes.USBAttach
 fi
 
 find "$rootfs_dir" -print0 | xargs -0 touch -ch -d @0
