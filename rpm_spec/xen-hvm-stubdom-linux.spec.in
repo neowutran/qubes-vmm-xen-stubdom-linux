@@ -13,7 +13,7 @@ Group: System
 License: GPL
 URL: https://www.qubes-os.org/
 
-Requires: xen-libs >= 2001:4.14.0
+Requires: xen-libs >= 2001:4.14.3-5
 
 BuildRequires: quilt
 
