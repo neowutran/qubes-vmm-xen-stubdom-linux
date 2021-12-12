@@ -100,9 +100,9 @@ cp %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} .
 
 
 %build
-make -f Makefile.stubdom DESTDIR=${RPM_BUILD_ROOT} all install
+make -f Makefile.stubdom MAKE_PARALLEL="%{?_smp_mflags}" DESTDIR=${RPM_BUILD_ROOT} all install
 make -f Makefile.stubdom clean
-make -f Makefile.stubdom DESTDIR=${RPM_BUILD_ROOT} full install
+make -f Makefile.stubdom MAKE_PARALLEL="%{?_smp_mflags}" DESTDIR=${RPM_BUILD_ROOT} full install
 
 %files
 /usr/libexec/xen/boot/qemu-stubdom-linux-rootfs

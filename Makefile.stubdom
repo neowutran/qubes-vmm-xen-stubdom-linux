@@ -67,7 +67,7 @@ build/busybox/config.status: build/busybox/.patched
 	touch $@
 
 build/busybox/busybox: build/busybox/config.status
-	$(MAKE) -C build/busybox
+	$(MAKE) $(MAKE_PARALLEL) -C build/busybox
 	strip --strip-unneeded build/busybox/busybox_unstripped
 	mv build/busybox/busybox_unstripped build/busybox/busybox
 
@@ -151,7 +151,7 @@ build/pulseaudio/config.status: build/pulseaudio/.patched  build/pulseaudio/src/
 		ac_cv_header_grp_h=no
 
 build/padist/usr/bin/pulseaudio: build/pulseaudio/config.status
-	$(MAKE) install-strip -C build/pulseaudio DESTDIR=$(shell pwd)/build/padist
+	$(MAKE) $(MAKE_PARALLEL) install-strip -C build/pulseaudio DESTDIR=$(shell pwd)/build/padist
 
 build/libusb/.extracted: libusb-$(LIBUSB_VERSION).tar.bz2
 	rm -rf build/libusb
@@ -166,7 +166,7 @@ build/libusb/config.status: build/libusb/.extracted
 			--libdir=/lib
 
 build/libusb/.installed: build/libusb/config.status
-	$(MAKE) -C build/libusb
+	$(MAKE) $(MAKE_PARALLEL) -C build/libusb
 	$(MAKE)	install-strip -C build/libusb DESTDIR=$(shell pwd)/build/padist
 	touch $@
 
@@ -289,9 +289,9 @@ build/qemu/config.status: build/qemu/.patched build/qemu/.gui-agent-copied-in $(
 		--prefix=/usr
 
 build/qemu/i386-softmmu/qemu-system-i386: build/qemu/.patched build/qemu/config.status
-	$(MAKE) -C build/qemu/roms seavgabios-{cirrus,stdvga}
-	#$(MAKE) -C build/qemu/pc-bios/optionrom linuxboot.bin linuxboot_dma.bin
-	$(MAKE) -C build/qemu
+	$(MAKE) $(MAKE_PARALLEL) -C build/qemu/roms seavgabios-{cirrus,stdvga}
+	#$(MAKE) $(MAKE_PARALLEL) -C build/qemu/pc-bios/optionrom linuxboot.bin linuxboot_dma.bin
+	$(MAKE) $(MAKE_PARALLEL) -C build/qemu
 
 LINUX_PATCHES := $(shell $Q -l linux)
 
@@ -312,10 +312,10 @@ build/linux/.config: $(sort $(wildcard linux/config/[0-9][0-9]-*)) build/linux/.
 	cd build/linux; env -u MAKEFLAGS ./scripts/kconfig/merge_config.sh -n /dev/null ../../linux/config/$(KERNEL_CONFIG)
 
 $(VMLINUZ): build/linux/.patched build/linux/.config
-	$(MAKE) -C build/linux
+	$(MAKE) $(MAKE_PARALLEL) -C build/linux
 
 helpers/vchan-socket-proxy helpers/add-fd: helpers/vchan-socket-proxy.c helpers/add-fd.c
-	$(MAKE) -C helpers
+	$(MAKE) $(MAKE_PARALLEL) -C helpers
 
 DRACUT_INSTALL=/usr/lib/dracut/dracut-install
 
