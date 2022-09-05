@@ -180,7 +180,7 @@ if [ -e /proc/self/fd/3 ]; then
 fi
 
 # FIXME: this assume dom0 as toolstack domain
-vchan-socket-proxy 0 $device_model/qmp-vchan /tmp/qemu.qmp &
+vchan-socket-proxy --mode=server --reconnect-marker=1 --verbose 0 $device_model/qmp-vchan /tmp/qemu.qmp &
 
 while true; do
     printf '==== Press enter for shell ====\n'

@@ -1,3 +1,3 @@
 all: vchan-socket-proxy add-fd
 
-vchan-socket-proxy: LDLIBS = -lxenvchan
+vchan-socket-proxy: LDLIBS = -lxenvchan -lxenstore -lxenctrl
