@@ -9,7 +9,7 @@ INCLUDED_SOURCES = \
 	linux-$(LINUX_VERSION).tar \
 	busybox-$(BUSYBOX_VERSION).tar.bz2 \
 	pulseaudio-$(PULSEAUDIO_VERSION).tar.xz \
-       libusb-$(LIBUSB_VERSION).tar.bz2
+	libusb-$(LIBUSB_VERSION).tar.bz2
 
 ifneq ($(filter $(DISTRIBUTION), fedora centos),)
 SOURCE_COPY_IN := $(INCLUDED_SOURCES)
