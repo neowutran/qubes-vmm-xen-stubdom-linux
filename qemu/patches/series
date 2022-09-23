@@ -2,7 +2,9 @@
 0002-xen-handle-CONFIG_STUBDOM.patch
 0003-xen-hvm-handle-CONFIG_STUBDOM.patch
 0004-QubesGUI-display-options.patch
-0005-Disable-MSI-X-caps.patch
+0001-hw-xen-xen_pt-Save-back-data-only-for-declared-regis.patch
+0002-Do-not-access-dev-mem-in-MSI-X-PCI-passthrough-on-Xe.patch
+0003-Conditionally-disable-MSI-X-cap.patch
 0006-xen-round-pci-region-sizes.patch
 0007-Disable-NIC-option-ROM.patch
 0008-xen-fix-stubdom-PCI-addr.patch
