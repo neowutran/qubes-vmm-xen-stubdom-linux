@@ -23,9 +23,9 @@ URLS := \
 ALL_URLS := $(patsubst %.sign,%,$(patsubst %.sig,%,$(URLS))) $(filter %.sig, $(URLS)) $(filter %.sign, $(URLS))
 ALL_FILES_TMP := $(notdir $(ALL_URLS))
 
-ifneq ($(DISTFILES_MIRROR),)
-ALL_URLS := $(addprefix $(DISTFILES_MIRROR),$(ALL_FILES_TMP))
-endif
+# ifneq ($(DISTFILES_MIRROR),)
+# ALL_URLS := $(addprefix $(DISTFILES_MIRROR),$(ALL_FILES_TMP))
+# endif
 
 ALL_FILES := $(addprefix dl/,$(ALL_FILES_TMP))
 
