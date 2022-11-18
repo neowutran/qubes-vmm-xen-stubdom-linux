@@ -13,19 +13,21 @@ Contributors: marmarek, fepitre
  hw/i386/pc_piix.c | 10 ++++++++++
  1 file changed, 10 insertions(+)
 
+
 diff --git a/hw/i386/pc_piix.c b/hw/i386/pc_piix.c
-index 1b0c57b04e..b493a609bd 100644
+index 2cc13e654..fcd247bfc 100644
 --- a/hw/i386/pc_piix.c
 +++ b/hw/i386/pc_piix.c
-@@ -62,6 +62,7 @@
+@@ -62,6 +62,8 @@
  #include "hw/mem/nvdimm.h"
  #include "hw/i386/acpi-build.h"
  #include "kvm/kvm-cpu.h"
 +#include "hw/i386/fw_cfg.h"
++
  
  #define MAX_IDE_BUS 2
  
-@@ -189,6 +190,15 @@ static void pc_init1(MachineState *machine,
+@@ -197,8 +199,17 @@ static void pc_init1(MachineState *machine,
          if (machine->kernel_filename != NULL) {
              /* For xen HVM direct kernel boot, load linux here */
              xen_load_linux(pcms);
@@ -39,8 +41,10 @@ index 1b0c57b04e..b493a609bd 100644
 +
 +            x86ms->fw_cfg = fw_cfg;
          }
-     }
+-    }
++   }
+ 
+     gsi_state = pc_gsi_create(&x86ms->gsi, pcmc->pci_enabled);
  
 -- 
 2.31.1
-

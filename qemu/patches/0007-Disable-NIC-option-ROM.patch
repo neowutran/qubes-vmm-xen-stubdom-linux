@@ -15,10 +15,10 @@ Contributors: fepitre
  2 files changed, 2 deletions(-)
 
 diff --git a/hw/net/e1000.c b/hw/net/e1000.c
-index a30546c5d5..cffd3b8f2f 100644
+index e26e0a64c..2c8886aa5 100644
 --- a/hw/net/e1000.c
 +++ b/hw/net/e1000.c
-@@ -1773,7 +1773,6 @@ static void e1000_class_init(ObjectClass *klass, void *data)
+@@ -1783,7 +1783,6 @@ static void e1000_class_init(ObjectClass *klass, void *data)
  
      k->realize = pci_e1000_realize;
      k->exit = pci_e1000_uninit;
@@ -27,7 +27,7 @@ index a30546c5d5..cffd3b8f2f 100644
      k->device_id = info->device_id;
      k->revision = info->revision;
 diff --git a/hw/net/rtl8139.c b/hw/net/rtl8139.c
-index 90b4fc63ce..fb1b83a12a 100644
+index 6b65823b4..c7b01f10e 100644
 --- a/hw/net/rtl8139.c
 +++ b/hw/net/rtl8139.c
 @@ -3429,7 +3429,6 @@ static void rtl8139_class_init(ObjectClass *klass, void *data)

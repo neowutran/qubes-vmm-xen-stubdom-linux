@@ -23,10 +23,10 @@ Signed-off-by: Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/hw/i386/pc.c b/hw/i386/pc.c
-index c2b9d62a35..07de8a9af0 100644
+index 7280c02ce..d6a18b0a4 100644
 --- a/hw/i386/pc.c
 +++ b/hw/i386/pc.c
-@@ -834,7 +834,8 @@ void xen_load_linux(PCMachineState *pcms)
+@@ -791,7 +791,8 @@ void xen_load_linux(PCMachineState *pcms)
  
      assert(MACHINE(pcms)->kernel_filename != NULL);
  

@@ -35,11 +35,11 @@ Signed-off-by: Grzegorz Uriasz <gorbak25@gmail.com>
  3 files changed, 52 insertions(+), 6 deletions(-)
 
 diff --git a/hw/xen/xen_pt.c b/hw/xen/xen_pt.c
-index 76f169e454..b12dca023d 100644
+index 4ef01df40..85d12a268 100644
 --- a/hw/xen/xen_pt.c
 +++ b/hw/xen/xen_pt.c
-@@ -496,8 +496,12 @@ static int xen_pt_register_regions(XenPCIPassthroughState *s, uint16_t *cmd)
-                    i, r_size, r->base_addr, type);
+@@ -497,8 +497,12 @@ static int xen_pt_register_regions(XenPCIPassthroughState *s, uint16_t *cmd)
+ 
      }
  
 -    /* Register expansion ROM address */
@@ -54,10 +54,10 @@ index 76f169e454..b12dca023d 100644
  
          /* Re-set BAR reported by OS, otherwise ROM can't be read. */
 diff --git a/hw/xen/xen_pt_graphics.c b/hw/xen/xen_pt_graphics.c
-index a3bc7e3921..6d5241651a 100644
+index f303f67c9..2c0a6915c 100644
 --- a/hw/xen/xen_pt_graphics.c
 +++ b/hw/xen/xen_pt_graphics.c
-@@ -129,7 +129,7 @@ int xen_pt_unregister_vga_regions(XenHostPCIDevice *dev)
+@@ -129,13 +129,53 @@ int xen_pt_unregister_vga_regions(XenHostPCIDevice *dev)
      return 0;
  }
  
@@ -66,10 +66,9 @@ index a3bc7e3921..6d5241651a 100644
                         XenHostPCIDevice *dev)
  {
      return pci_assign_dev_load_option_rom(&s->dev, size,
-@@ -137,6 +137,45 @@ static void *get_vgabios(XenPCIPassthroughState *s, int *size,
+                                           dev->domain, dev->bus,
                                            dev->dev, dev->func);
  }
- 
 +static void xen_pt_direct_vbios_copy(XenPCIPassthroughState *s, Error **errp)
 +{
 +    int fd = -1;
@@ -79,7 +78,7 @@ index a3bc7e3921..6d5241651a 100644
 +    int bios_size = 32 << XC_PAGE_SHIFT;
 +    int vbios_addr = 0xc0000;
 +
-+    fd = open("/dev/mem", O_RDONLY);
++   fd = open("/dev/mem", O_RDONLY);
 +    if (fd == -1) {
 +        error_setg(errp, "Can't open /dev/mem: %s", strerror(errno));
 +        return;
@@ -109,15 +108,17 @@ index a3bc7e3921..6d5241651a 100644
 +    XEN_PT_LOG(&s->dev, "Legacy VBIOS registered\n");
 +}
 +
++
+ 
  /* Refer to Seabios. */
  struct rom_header {
-     uint16_t signature;
-@@ -179,9 +218,11 @@ void xen_pt_setup_vga(XenPCIPassthroughState *s, XenHostPCIDevice *dev,
+@@ -179,9 +219,12 @@ void xen_pt_setup_vga(XenPCIPassthroughState *s, XenHostPCIDevice *dev,
          return;
      }
  
 -    bios = get_vgabios(s, &bios_size, dev);
 +    bios = get_sysfs_vgabios(s, &bios_size, dev);
++
      if (!bios) {
 -        error_setg(errp, "VGA: Can't get VBIOS");
 +        XEN_PT_LOG(&s->dev, "Unable to get host VBIOS from sysfs - "
@@ -126,24 +127,26 @@ index a3bc7e3921..6d5241651a 100644
          return;
      }
  
-@@ -223,6 +264,7 @@ void xen_pt_setup_vga(XenPCIPassthroughState *s, XenHostPCIDevice *dev,
+@@ -223,6 +266,8 @@ void xen_pt_setup_vga(XenPCIPassthroughState *s, XenHostPCIDevice *dev,
  
      /* Currently we fixed this address as a primary for legacy BIOS. */
      cpu_physical_memory_write(0xc0000, bios, bios_size);
 +    XEN_PT_LOG(&s->dev, "Legacy VBIOS registered\n");
++
  }
  
  uint32_t igd_read_opregion(XenPCIPassthroughState *s)
 diff --git a/hw/xen/xen_pt_load_rom.c b/hw/xen/xen_pt_load_rom.c
-index f71ef54b98..0437a18e82 100644
+index bd8ed3230..dd3624cb7 100644
 --- a/hw/xen/xen_pt_load_rom.c
 +++ b/hw/xen/xen_pt_load_rom.c
-@@ -75,7 +75,7 @@ void *pci_assign_dev_load_option_rom(PCIDevice *dev,
+@@ -75,7 +75,8 @@ void *pci_assign_dev_load_option_rom(PCIDevice *dev,
          goto close_rom;
      }
  
 -    pci_register_bar(dev, PCI_ROM_SLOT, 0, &dev->rom);
 +    pci_register_bar(dev, PCI_ROM_SLOT, PCI_BASE_ADDRESS_SPACE_MEMORY, &dev->rom);
++
      dev->has_rom = true;
      *size = st.st_size;
  close_rom:

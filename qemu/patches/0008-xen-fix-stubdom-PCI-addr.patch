@@ -14,8 +14,32 @@ Contributors: HW42, fepitre
  hw/xen/xen-host-pci-device.h |  6 +++
  2 files changed, 82 insertions(+), 1 deletion(-)
 
+diff --git a/hw/net/e1000.c b/hw/net/e1000.c
+index e26e0a64c..2c8886aa5 100644
+--- a/hw/net/e1000.c
++++ b/hw/net/e1000.c
+@@ -1783,7 +1783,6 @@ static void e1000_class_init(ObjectClass *klass, void *data)
+ 
+     k->realize = pci_e1000_realize;
+     k->exit = pci_e1000_uninit;
+-    k->romfile = "efi-e1000.rom";
+     k->vendor_id = PCI_VENDOR_ID_INTEL;
+     k->device_id = info->device_id;
+     k->revision = info->revision;
+diff --git a/hw/net/rtl8139.c b/hw/net/rtl8139.c
+index 6b65823b4..c7b01f10e 100644
+--- a/hw/net/rtl8139.c
++++ b/hw/net/rtl8139.c
+@@ -3429,7 +3429,6 @@ static void rtl8139_class_init(ObjectClass *klass, void *data)
+ 
+     k->realize = pci_rtl8139_realize;
+     k->exit = pci_rtl8139_uninit;
+-    k->romfile = "efi-rtl8139.rom";
+     k->vendor_id = PCI_VENDOR_ID_REALTEK;
+     k->device_id = PCI_DEVICE_ID_REALTEK_8139;
+     k->revision = RTL8139_PCI_REVID; /* >=0x20 is for 8139C+ */
 diff --git a/hw/xen/xen-host-pci-device.c b/hw/xen/xen-host-pci-device.c
-index 8c6e9a1716..2619cb1a09 100644
+index 8c6e9a171..a073669c7 100644
 --- a/hw/xen/xen-host-pci-device.c
 +++ b/hw/xen/xen-host-pci-device.c
 @@ -9,6 +9,7 @@
@@ -26,7 +50,7 @@ index 8c6e9a1716..2619cb1a09 100644
  #include "xen-host-pci-device.h"
  
  #define XEN_HOST_PCI_MAX_EXT_CAP \
-@@ -33,13 +34,76 @@
+@@ -33,13 +34,78 @@
  #define IORESOURCE_PREFETCH     0x00001000      /* No side effects */
  #define IORESOURCE_MEM_64       0x00100000
  
@@ -93,6 +117,7 @@ index 8c6e9a1716..2619cb1a09 100644
 +    free(be_path);
 +}
 +
++
  static void xen_host_pci_sysfs_path(const XenHostPCIDevice *d,
                                      const char *name, char *buf, ssize_t size)
  {
@@ -101,10 +126,11 @@ index 8c6e9a1716..2619cb1a09 100644
      rc = snprintf(buf, size, "/sys/bus/pci/devices/%04x:%02x:%02x.%d/%s",
 -                  d->domain, d->bus, d->dev, d->func, name);
 +                  d->local_domain, d->local_bus, d->local_dev, d->local_func, name);
++
      assert(rc >= 0 && rc < size);
  }
  
-@@ -342,6 +406,17 @@ void xen_host_pci_device_get(XenHostPCIDevice *d, uint16_t domain,
+@@ -342,6 +408,18 @@ void xen_host_pci_device_get(XenHostPCIDevice *d, uint16_t domain,
      d->dev = dev;
      d->func = func;
  
@@ -119,14 +145,15 @@ index 8c6e9a1716..2619cb1a09 100644
 +        d->local_func = d->func;
 +    }
 +
++    
      xen_host_pci_config_open(d, errp);
      if (*errp) {
          goto error;
 diff --git a/hw/xen/xen-host-pci-device.h b/hw/xen/xen-host-pci-device.h
-index 4d8d34ecb0..270dcb27f7 100644
+index 4d8d34ecb..e84328e7c 100644
 --- a/hw/xen/xen-host-pci-device.h
 +++ b/hw/xen/xen-host-pci-device.h
-@@ -23,6 +23,12 @@ typedef struct XenHostPCIDevice {
+@@ -23,6 +23,13 @@ typedef struct XenHostPCIDevice {
      uint8_t dev;
      uint8_t func;
  
@@ -136,6 +163,7 @@ index 4d8d34ecb0..270dcb27f7 100644
 +    uint8_t local_dev;
 +    uint8_t local_func;
 +
++    
      uint16_t vendor_id;
      uint16_t device_id;
      uint32_t class_code;

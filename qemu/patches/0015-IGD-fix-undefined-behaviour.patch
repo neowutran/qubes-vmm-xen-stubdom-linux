@@ -37,7 +37,7 @@ Signed-off-by: Grzegorz Uriasz <gorbak25@gmail.com>
  1 file changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/hw/xen/xen_pt_load_rom.c b/hw/xen/xen_pt_load_rom.c
-index 03422a8a71..f71ef54b98 100644
+index 03422a8a7..bd8ed3230 100644
 --- a/hw/xen/xen_pt_load_rom.c
 +++ b/hw/xen/xen_pt_load_rom.c
 @@ -38,12 +38,12 @@ void *pci_assign_dev_load_option_rom(PCIDevice *dev,
@@ -64,7 +64,7 @@ index 03422a8a71..f71ef54b98 100644
 -                     "(check dmesg).\nSkip option ROM probe with rombar=0, "
 -                     "or load from file with romfile=\n");
 +        warn_report("pci-assign: Cannot read from host %s", rom_file);
-+        memory_region_unref(&dev->rom);
++        memory_region_get_ram_ptron_unref(&dev->rom);
 +        ptr = NULL;
          goto close_rom;
      }

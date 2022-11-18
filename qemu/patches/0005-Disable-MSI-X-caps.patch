@@ -14,34 +14,38 @@ Contributors: fepitre
  1 file changed, 6 insertions(+)
 
 diff --git a/hw/xen/xen_pt_config_init.c b/hw/xen/xen_pt_config_init.c
-index c5c4e943a8..d4b6f074a6 100644
+index 4758514dd..497502156 100644
 --- a/hw/xen/xen_pt_config_init.c
 +++ b/hw/xen/xen_pt_config_init.c
-@@ -1454,6 +1454,7 @@ static XenPTRegInfo xen_pt_emu_reg_msi[] = {
+@@ -1453,7 +1453,7 @@ static XenPTRegInfo xen_pt_emu_reg_msi[] = {
+     },
  };
  
- 
+-
 +#ifndef CONFIG_STUBDOM
  /**************************************
   * MSI-X Capability
   */
-@@ -1548,6 +1549,7 @@ static XenPTRegInfo xen_pt_emu_reg_msix[] = {
-         .size = 0,
+@@ -1549,6 +1549,9 @@ static XenPTRegInfo xen_pt_emu_reg_msix[] = {
      },
  };
-+#endif
  
++#endif
++
++
  static XenPTRegInfo xen_pt_emu_reg_igd_opregion[] = {
      /* Intel IGFX OpRegion reg */
-@@ -1684,6 +1686,7 @@ static int xen_pt_msi_size_init(XenPCIPassthroughState *s,
+     {
+@@ -1684,6 +1687,8 @@ static int xen_pt_msi_size_init(XenPCIPassthroughState *s,
      *size = msi_size;
      return 0;
  }
++
 +#ifndef CONFIG_STUBDOM
  /* get MSI-X Capability Structure register group size */
  static int xen_pt_msix_size_init(XenPCIPassthroughState *s,
                                   const XenPTRegGroupInfo *grp_reg,
-@@ -1701,6 +1704,7 @@ static int xen_pt_msix_size_init(XenPCIPassthroughState *s,
+@@ -1701,6 +1706,7 @@ static int xen_pt_msix_size_init(XenPCIPassthroughState *s,
      *size = grp_reg->grp_size;
      return 0;
  }
@@ -49,7 +53,7 @@ index c5c4e943a8..d4b6f074a6 100644
  
  
  static const XenPTRegGroupInfo xen_pt_emu_reg_grps[] = {
-@@ -1794,6 +1798,7 @@ static const XenPTRegGroupInfo xen_pt_emu_reg_grps[] = {
+@@ -1794,6 +1800,7 @@ static const XenPTRegGroupInfo xen_pt_emu_reg_grps[] = {
          .size_init   = xen_pt_pcie_size_init,
          .emu_regs = xen_pt_emu_reg_pcie,
      },
@@ -57,7 +61,7 @@ index c5c4e943a8..d4b6f074a6 100644
      /* MSI-X Capability Structure reg group */
      {
          .grp_id      = PCI_CAP_ID_MSIX,
-@@ -1802,6 +1807,7 @@ static const XenPTRegGroupInfo xen_pt_emu_reg_grps[] = {
+@@ -1802,6 +1809,7 @@ static const XenPTRegGroupInfo xen_pt_emu_reg_grps[] = {
          .size_init   = xen_pt_msix_size_init,
          .emu_regs = xen_pt_emu_reg_msix,
      },

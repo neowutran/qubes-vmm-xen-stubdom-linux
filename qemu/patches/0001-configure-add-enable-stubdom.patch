@@ -14,36 +14,28 @@ Contributors: fepitre
  1 file changed, 9 insertions(+)
 
 diff --git a/configure b/configure
-index 9a79a004d7..47fbaa0ace 100755
+index 72ab03f11..113f95255 100755
 --- a/configure
 +++ b/configure
-@@ -342,6 +342,7 @@ pvrdma="$default_feature"
- gprof="no"
+@@ -297,6 +297,7 @@ EXTRA_OBJCFLAGS=""
+ EXTRA_LDFLAGS=""
+ 
  debug_tcg="no"
- debug="no"
 +stubdom="no"
  sanitizers="no"
  tsan="no"
- fortify_source="$default_feature"
-@@ -1172,6 +1173,8 @@ for opt do
+ fortify_source="yes"
+@@ -859,6 +860,8 @@ for opt do
    ;;
-   --enable-pie) pie="yes"
+   --enable-bsd-user) bsd_user="yes"
    ;;
 +  --enable-stubdom) stubdom="yes"
 +  ;;
-   --disable-pie) pie="no"
+   --enable-pie) pie="yes"
    ;;
-   --enable-werror) werror="yes"
-@@ -1925,6 +1928,7 @@ disabled with --disable-FEATURE, default is enabled if available
-   usb-redir       usb network redirection support
-   lzo             support of lzo compression library
-   snappy          support of snappy compression library
-+  enable-stubdom  support for Xen stubdom
-   bzip2           support of bzip2 compression library
-                   (for reading bzip2-compressed dmg images)
-   lzfse           support of lzfse compression library
-@@ -4705,6 +4709,11 @@ if test "$qom_cast_debug" = "yes" ; then
-   echo "CONFIG_QOM_CAST_DEBUG=y" >> $config_host_mak
+   --disable-pie) pie="no"
+@@ -2469,6 +2472,12 @@ if [ "$bsd" = "yes" ] ; then
+   echo "CONFIG_BSD=y" >> $config_host_mak
  fi
  
 +# stubdom support
@@ -51,9 +43,10 @@ index 9a79a004d7..47fbaa0ace 100755
 +  echo "CONFIG_STUBDOM=y" >> $config_host_mak
 +fi
 +
++
  echo "CONFIG_COROUTINE_BACKEND=$coroutine" >> $config_host_mak
- if test "$coroutine_pool" = "yes" ; then
-   echo "CONFIG_COROUTINE_POOL=1" >> $config_host_mak
+ 
+ if test "$have_asan_iface_fiber" = "yes" ; then
 -- 
 2.31.1
 

@@ -14,10 +14,10 @@ Contributors: fepitre
  1 file changed, 9 insertions(+)
 
 diff --git a/include/hw/xen/xen.h b/include/hw/xen/xen.h
-index 0f9962b1c1..a518988e77 100644
+index afdf9c436..eb90cc673 100644
 --- a/include/hw/xen/xen.h
 +++ b/include/hw/xen/xen.h
-@@ -20,6 +20,15 @@ extern uint32_t xen_domid;
+@@ -20,6 +20,16 @@ extern uint32_t xen_domid;
  extern enum xen_mode xen_mode;
  extern bool xen_domid_restrict;
  
@@ -30,9 +30,9 @@ index 0f9962b1c1..a518988e77 100644
 +#endif
 +}
 +
++
  int xen_pci_slot_get_pirq(PCIDevice *pci_dev, int irq_num);
+ int xen_set_pci_link_route(uint8_t link, uint8_t irq);
  void xen_piix3_set_irq(void *opaque, int irq_num, int level);
- void xen_piix_pci_write_config_client(uint32_t address, uint32_t val, int len);
 -- 
 2.31.1
-

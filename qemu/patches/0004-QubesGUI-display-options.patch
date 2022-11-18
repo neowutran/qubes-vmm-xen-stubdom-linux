@@ -19,23 +19,24 @@ Contributors: HW42, fepitre
  6 files changed, 42 insertions(+), 3 deletions(-)
 
 diff --git a/hw/display/vga.c b/hw/display/vga.c
-index 9d1f66af40..bed6f6aaed 100644
+index 50ecb1ad0..415ee0716 100644
 --- a/hw/display/vga.c
 +++ b/hw/display/vga.c
-@@ -1555,6 +1555,8 @@ static void vga_draw_graphic(VGACommonState *s, int full_update)
-     } else {
+@@ -1557,6 +1557,9 @@ static void vga_draw_graphic(VGACommonState *s, int full_update)
          share_surface = false;
      }
+ 
 +    /* XXX: Qubes GUI can't use a shared buffer */
 +    share_surface = false;
- 
++    
      if (s->line_offset != s->last_line_offset ||
          disp_width != s->last_width ||
+         height != s->last_height ||
 diff --git a/include/ui/console.h b/include/ui/console.h
-index b30b63976a..f89676a478 100644
+index c0520c694..8a402ec0a 100644
 --- a/include/ui/console.h
 +++ b/include/ui/console.h
-@@ -117,6 +117,7 @@ typedef struct DisplaySurface {
+@@ -128,6 +128,7 @@ typedef struct DisplaySurface {
      GLenum gltype;
      GLuint texture;
  #endif
@@ -43,7 +44,7 @@ index b30b63976a..f89676a478 100644
  } DisplaySurface;
  
  typedef struct QemuUIInfo {
-@@ -359,6 +360,11 @@ static inline pixman_format_code_t surface_format(DisplaySurface *s)
+@@ -411,6 +412,12 @@ static inline pixman_format_code_t surface_format(DisplaySurface *s)
      return s->format;
  }
  
@@ -52,14 +53,15 @@ index b30b63976a..f89676a478 100644
 +    return s->xen_refs;
 +}
 +
++
  typedef uint32_t console_ch_t;
  
  static inline void console_write_ch(console_ch_t *dest, uint32_t ch)
 diff --git a/meson.build b/meson.build
-index b3e7ec0e92..aab4e2fb3e 100644
+index 20fddbd70..e0f94e49f 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -1197,6 +1197,13 @@ endif
+@@ -1669,6 +1669,14 @@ endif
  have_host_block_device = (targetos != 'darwin' or
      cc.has_header('IOKit/storage/IOMedia.h'))
  
@@ -70,22 +72,23 @@ index b3e7ec0e92..aab4e2fb3e 100644
 +  language: ['c', 'cpp', 'objc']
 +)
 +
- #################
- # config-host.h #
- #################
-@@ -3075,6 +3082,7 @@ summary_info += {'bpf support': libbpf.found()}
- # TODO: add back protocol and server version
- summary_info += {'spice support':     config_host.has_key('CONFIG_SPICE')}
- summary_info += {'rbd support':       rbd.found()}
++
+ # FIXME enable_modules shouldn't be necessary, but: https://github.com/mesonbuild/meson/issues/8333
+ dbus_display = get_option('dbus_display') \
+   .require(gio.version().version_compare('>=2.64'),
+@@ -3954,6 +3962,7 @@ if spice_protocol.found()
+   summary_info += {'  spice server support': spice}
+ endif
+ summary_info += {'rbd support':       rbd}
 +summary_info += {'libvchan support':  vchan_xen.found()}
- summary_info += {'xfsctl support':    config_host.has_key('CONFIG_XFS')}
- summary_info += {'smartcard support': cacard.found()}
- summary_info += {'U2F support':       u2f.found()}
+ summary_info += {'smartcard support': cacard}
+ summary_info += {'U2F support':       u2f}
+ summary_info += {'libusb':            libusb}
 diff --git a/qapi/ui.json b/qapi/ui.json
-index fd9677d48e..5e1c086d9a 100644
+index cf58ab428..8e04b07b2 100644
 --- a/qapi/ui.json
 +++ b/qapi/ui.json
-@@ -1092,6 +1092,21 @@
+@@ -1272,6 +1272,21 @@
  { 'struct'  : 'DisplayCurses',
    'data'    : { '*charset'       : 'str' } }
  
@@ -105,30 +108,26 @@ index fd9677d48e..5e1c086d9a 100644
 +                'domid'     : 'int' } }
 +
  ##
- # @DisplayType:
+ # @DisplayCocoa:
  #
-@@ -1139,7 +1154,8 @@
-               'if': 'defined(CONFIG_OPENGL) && defined(CONFIG_GBM)' },
-     { 'name': 'curses', 'if': 'defined(CONFIG_CURSES)' },
-     { 'name': 'cocoa', 'if': 'defined(CONFIG_COCOA)' },
--    { 'name': 'spice-app', 'if': 'defined(CONFIG_SPICE)'} ] }
-+    { 'name': 'spice-app', 'if': 'defined(CONFIG_SPICE)'},
-+    { 'name': 'qubes-gui'} ] }
- 
- ##
- # @DisplayOptions:
-@@ -1167,7 +1183,8 @@
-       'gtk': { 'type': 'DisplayGTK', 'if': 'defined(CONFIG_GTK)' },
-       'curses': { 'type': 'DisplayCurses', 'if': 'defined(CONFIG_CURSES)' },
+@@ -1372,6 +1387,7 @@
+     { 'name': 'curses', 'if': 'CONFIG_CURSES' },
+     { 'name': 'cocoa', 'if': 'CONFIG_COCOA' },
+     { 'name': 'spice-app', 'if': 'CONFIG_SPICE' },
++    { 'name': 'qubes-gui'},
+     { 'name': 'dbus', 'if': 'CONFIG_DBUS_DISPLAY' }
+   ]
+ }
+@@ -1403,6 +1419,7 @@
        'egl-headless': { 'type': 'DisplayEGLHeadless',
--                        'if': 'defined(CONFIG_OPENGL) && defined(CONFIG_GBM)' }
-+                        'if': 'defined(CONFIG_OPENGL) && defined(CONFIG_GBM)' },
-+      'qubes-gui': { 'type': 'DisplayQubesGUI' }
+                         'if': { 'all': ['CONFIG_OPENGL', 'CONFIG_GBM'] } },
+       'dbus': { 'type': 'DisplayDBus', 'if': 'CONFIG_DBUS_DISPLAY' },
++      'qubes-gui': { 'type': 'DisplayQubesGUI' },
+       'sdl': { 'type': 'DisplaySDL', 'if': 'CONFIG_SDL' }
    }
  }
- 
 diff --git a/ui/console.c b/ui/console.c
-index 1103b65314..ba2689406b 100644
+index 765892f84..4bcd5a74f 100644
 --- a/ui/console.c
 +++ b/ui/console.c
 @@ -24,6 +24,7 @@
@@ -139,7 +138,7 @@ index 1103b65314..ba2689406b 100644
  #include "hw/qdev-core.h"
  #include "qapi/error.h"
  #include "qapi/qapi-commands-ui.h"
-@@ -1392,9 +1393,11 @@ DisplaySurface *qemu_create_displaysurface(int width, int height)
+@@ -1515,9 +1516,11 @@ DisplaySurface *qemu_create_displaysurface(int width, int height)
  
      trace_displaysurface_create(surface, width, height);
      surface->format = PIXMAN_x8r8g8b8;
@@ -153,19 +152,18 @@ index 1103b65314..ba2689406b 100644
      surface->flags = QEMU_ALLOCATED_FLAG;
  
 diff --git a/ui/meson.build b/ui/meson.build
-index a3a187d633..57c83c717f 100644
+index ec1394977..0f08fdd3b 100644
 --- a/ui/meson.build
 +++ b/ui/meson.build
-@@ -103,6 +103,9 @@ if config_host.has_key('CONFIG_SPICE') and config_host.has_key('CONFIG_GIO')
+@@ -134,6 +134,8 @@ if spice.found() and gio.found()
    ui_modules += {'spice-app': spice_ss}
  endif
  
-+
 +subdir('gui-agent')
 +
- keymap_gen = find_program('keycodemapdb/tools/keymap-gen')
- 
  keymaps = [
+   ['atset1', 'qcode'],
+   ['linux', 'qcode'],
 -- 
 2.31.1
 
