@@ -90,7 +90,7 @@ build/pulseaudio/.patched: build/pulseaudio/.extracted pulseaudio/patches/series
 	touch $@
 
 build/pulseaudio/config.status: build/pulseaudio/.patched  build/pulseaudio/src/modules/module-vchan-sink.c
-	cd build/pulseaudio && aclocal && ./configure \
+	cd build/pulseaudio && ./configure \
 		--disable-silent-rules \
 		--disable-static \
 		--disable-static-bins \
