@@ -3,7 +3,7 @@
 	url = https://github.com/QubesOS/qubes-gui-agent-xen-hvm-stubdom
 [submodule "pulseaudio/gui-agent"]
 	path = pulseaudio/gui-agent
-	url = https://github.com/QubesOS/qubes-gui-agent-linux
+	url = https://github.com/neowutran/qubes-gui-agent-linux
 [submodule "usbproxy"]
 	path = usbproxy
 	url = https://github.com/QubesOS/qubes-app-linux-usb-proxy
