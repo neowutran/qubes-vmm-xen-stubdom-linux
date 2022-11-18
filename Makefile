@@ -9,6 +9,10 @@ include Makefile.vars
 
 UNTRUSTED_SUFF := .UNTRUSTED
 
+# TODO remove after tests
+FETCH_CMD := curl --proto '=https' --proto-redir '=https' --http1.1 --tlsv1.2 -sSfL -o
+
+
 ifeq ($(FETCH_CMD),)
 $(error "You can not run this Makefile without having FETCH_CMD defined")
 endif
