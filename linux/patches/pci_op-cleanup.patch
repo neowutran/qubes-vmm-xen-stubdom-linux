@@ -53,48 +53,48 @@ Date:   Wed Apr 1 17:01:26 2015 -0400
     	drivers/xen/xen-pciback/pciback_ops.c
 
 diff --git a/drivers/pci/xen-pcifront.c b/drivers/pci/xen-pcifront.c
-index b1ffebe..353c8a2 100644
+index 689271c42..d56e6d51d 100644
 --- a/drivers/pci/xen-pcifront.c
 +++ b/drivers/pci/xen-pcifront.c
-@@ -297,7 +297,7 @@ static int pci_frontend_enable_msix(struct pci_dev *dev,
+@@ -291,7 +291,7 @@ static int pci_frontend_enable_msix(struct pci_dev *dev,
  	} else {
- 		dev_err(&dev->dev, "enable msix get err %x\n", err);
+ 		pci_err(dev, "enable msix get err %x\n", err);
  	}
 -	return err;
 +	return err ? -EINVAL : 0;
  }
-
+ 
  static void pci_frontend_disable_msix(struct pci_dev *dev)
 diff --git a/drivers/xen/xen-pciback/pciback_ops.c b/drivers/xen/xen-pciback/pciback_ops.c
-index fa2b222..4db6c19 100644
+index 84e014490..61b9a6960 100644
 --- a/drivers/xen/xen-pciback/pciback_ops.c
 +++ b/drivers/xen/xen-pciback/pciback_ops.c
-@@ -266,7 +266,7 @@ error:
+@@ -249,7 +249,7 @@ int xen_pcibk_enable_msix(struct xen_pcibk_device *pdev,
  	if (dev_data)
  		dev_data->ack_intr = 0;
  
 -	return result > 0 ? 0 : result;
 +	return result >= 0 ? 0 : XEN_PCI_ERR_op_failed;
  }
-
+ 
  static
 diff --git a/include/xen/interface/io/pciif.h b/include/xen/interface/io/pciif.h
-index d9922ae..c8b674f 100644
+index d1a87b62d..61043fcaf 100644
 --- a/include/xen/interface/io/pciif.h
 +++ b/include/xen/interface/io/pciif.h
-@@ -70,7 +70,7 @@ struct xen_pci_op {
+@@ -53,7 +53,7 @@ struct xen_pci_op {
  	/* IN: what action to perform: XEN_PCI_OP_* */
  	uint32_t cmd;
-
+ 
 -	/* OUT: will contain an error number (if any) from errno.h */
 +	/* OUT: will contain an XEN_PCI_ERR_* number. */
  	int32_t err;
-
+ 
  	/* IN: which device to touch */
-@@ -82,7 +82,9 @@ struct xen_pci_op {
+@@ -65,7 +65,9 @@ struct xen_pci_op {
  	int32_t offset;
  	int32_t size;
-
+ 
 -	/* IN/OUT: Contains the result after a READ or the value to WRITE */
 +	/* IN/OUT: Contains the result after a READ or the value to WRITE.
 +	 * If the err does not have XEN_PCI_ERR_success, depending on
