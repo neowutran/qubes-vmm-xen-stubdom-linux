@@ -9,13 +9,13 @@ Subject: [PATCH] pc-bios: ignore prebuilt binaries
  1 file changed, 44 deletions(-)
 
 diff --git a/pc-bios/meson.build b/pc-bios/meson.build
-index f2b32598af..dc9ce9a431 100644
+index 388e0db6e..e88fd46d9 100644
 --- a/pc-bios/meson.build
 +++ b/pc-bios/meson.build
-@@ -23,64 +23,20 @@ if install_edk2_blobs
+@@ -24,65 +24,18 @@ if unpack_edk2_blobs
  endif
  
- blobs = files(
+ blobs = [
 -  'bios.bin',
 -  'bios-256k.bin',
 -  'bios-microvm.bin',
@@ -55,6 +55,7 @@ index f2b32598af..dc9ce9a431 100644
 -  'petalogix-s3adsp1800.dtb',
 -  'petalogix-ml605.dtb',
 -  'multiboot.bin',
+-  'multiboot_dma.bin',
 -  'linuxboot.bin',
 -  'linuxboot_dma.bin',
 -  'kvmvapic.bin',
@@ -71,10 +72,10 @@ index f2b32598af..dc9ce9a431 100644
    'hppa-firmware.img',
 -  'opensbi-riscv32-generic-fw_dynamic.bin',
 -  'opensbi-riscv64-generic-fw_dynamic.bin',
-   'opensbi-riscv32-generic-fw_dynamic.elf',
-   'opensbi-riscv64-generic-fw_dynamic.elf',
 -  'npcm7xx_bootrom.bin',
- )
+-  'vof.bin',
+-  'vof-nvram.bin',
+ ]
  
  if get_option('install_blobs')
 -- 

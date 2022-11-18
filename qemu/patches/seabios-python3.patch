@@ -1,5 +1,5 @@
 diff --git a/roms/seabios/Makefile b/roms/seabios/Makefile
-index c20be15..995dc86 100644
+index c108f87de..408983026 100644
 --- a/roms/seabios/Makefile
 +++ b/roms/seabios/Makefile
 @@ -22,7 +22,7 @@ LD=$(CROSS_PREFIX)ld

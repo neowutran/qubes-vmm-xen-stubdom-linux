@@ -11,10 +11,10 @@ Subject: [PATCH] Add stubdom xengt support
  4 files changed, 16 insertions(+), 2 deletions(-)
 
 diff --git a/hw/pci/pci.c b/hw/pci/pci.c
-index 23d2ae2ab..40838559a 100644
+index 2f450f6a7..6fe075dea 100644
 --- a/hw/pci/pci.c
 +++ b/hw/pci/pci.c
-@@ -1062,6 +1062,10 @@ static PCIDevice *do_pci_register_device(PCIDevice *pci_dev,
+@@ -1102,6 +1102,10 @@ static PCIDevice *do_pci_register_device(PCIDevice *pci_dev,
      if (devfn < 0) {
          for(devfn = bus->devfn_min ; devfn < ARRAY_SIZE(bus->devices);
              devfn += PCI_FUNC_MAX) {
@@ -26,23 +26,23 @@ index 23d2ae2ab..40838559a 100644
                     !pci_bus_devfn_reserved(bus, devfn)) {
                  goto found;
 diff --git a/include/sysemu/sysemu.h b/include/sysemu/sysemu.h
-index 8fae66717..a6d228927 100644
+index 31aa45160..25b9e867a 100644
 --- a/include/sysemu/sysemu.h
 +++ b/include/sysemu/sysemu.h
-@@ -28,7 +28,7 @@ extern int autostart;
+@@ -29,7 +29,7 @@ extern int autostart;
  
  typedef enum {
      VGA_NONE, VGA_STD, VGA_CIRRUS, VGA_VMWARE, VGA_XENFB, VGA_QXL,
 -    VGA_TCX, VGA_CG3, VGA_DEVICE, VGA_VIRTIO,
-+    VGA_TCX, VGA_CG3, VGA_DEVICE, VGA_VIRTIO, VGA_VGT,
++    VGA_TCX, VGA_CG3, VGA_DEVICE, VGA_VIRTIO,VGA_VGT,
      VGA_TYPE_MAX,
  } VGAInterfaceType;
  
 diff --git a/qemu-options.hx b/qemu-options.hx
-index 83aa59a92..07d2696e4 100644
+index 31c04f7ee..337903d77 100644
 --- a/qemu-options.hx
 +++ b/qemu-options.hx
-@@ -2131,7 +2131,7 @@ SRST
+@@ -2227,7 +2227,7 @@ SRST
  ERST
  
  DEF("vga", HAS_ARG, QEMU_OPTION_vga,
@@ -51,23 +51,24 @@ index 83aa59a92..07d2696e4 100644
      "                select video card type\n", QEMU_ARCH_ALL)
  SRST
  ``-vga type``
-@@ -2175,6 +2175,11 @@ SRST
+@@ -2270,6 +2270,12 @@ SRST
+ 
      ``virtio``
          Virtio VGA card.
- 
++        
 +    ``xengt``
 +        Intel IGD card based on mediated pass-through technique. A single
 +        IGD card can be used to accelerate multiple VMs, which each run
 +        native graphics driver inside.
 +
+ 
      ``none``
          Disable VGA card.
- ERST
 diff --git a/softmmu/vl.c b/softmmu/vl.c
-index 5ca11e746..116095d5d 100644
+index 706bd7cff..f89e4050d 100644
 --- a/softmmu/vl.c
 +++ b/softmmu/vl.c
-@@ -906,6 +906,10 @@ static const VGAInterfaceInfo vga_interfaces[VGA_TYPE_MAX] = {
+@@ -941,6 +941,10 @@ static const VGAInterfaceInfo vga_interfaces[VGA_TYPE_MAX] = {
          .opt_name = "xenfb",
          .name = "Xen paravirtualized framebuffer",
      },
@@ -75,10 +76,10 @@ index 5ca11e746..116095d5d 100644
 +        .opt_name = "xengt",
 +        .name = "Intel GVT-g",
 +    },
+ #endif
  };
  
- static bool vga_interface_available(VGAInterfaceType t)
-@@ -960,6 +964,7 @@ static void select_vgahw(const MachineClass *machine_class, const char *p)
+@@ -997,6 +1001,7 @@ static void select_vgahw(const MachineClass *machine_class, const char *p)
                  exit(1);
              }
              vga_interface_type = t;

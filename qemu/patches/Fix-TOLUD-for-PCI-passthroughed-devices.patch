@@ -8,10 +8,10 @@ Subject: [PATCH] Fix TOLUD for PCI passthroughed devices
  1 file changed, 72 insertions(+), 1 deletion(-)
 
 diff --git a/hw/i386/xen/xen-hvm.c b/hw/i386/xen/xen-hvm.c
-index 9b432773f0..78c6bd758d 100644
+index 8065ad834..b56343971 100644
 --- a/hw/i386/xen/xen-hvm.c
 +++ b/hw/i386/xen/xen-hvm.c
-@@ -198,6 +198,65 @@ qemu_irq *xen_interrupt_controller_init(void)
+@@ -185,6 +185,66 @@ qemu_irq *xen_interrupt_controller_init(void)
  
  /* Memory Ops */
  
@@ -74,10 +74,11 @@ index 9b432773f0..78c6bd758d 100644
 +}
 +
 +
++
  static void xen_ram_init(PCMachineState *pcms,
                           ram_addr_t ram_size, MemoryRegion **ram_memory_p)
  {
-@@ -211,9 +270,21 @@ static void xen_ram_init(PCMachineState *pcms,
+@@ -198,9 +258,21 @@ static void xen_ram_init(PCMachineState *pcms,
  
      /* Handle the machine opt max-ram-below-4g.  It is basically doing
       * min(xen limit, user limit).
@@ -89,8 +90,9 @@ index 9b432773f0..78c6bd758d 100644
 +     * required to lower max-ram-below-4g. Fixing that might solve the
 +     * problem in a more elegant way.
       */
-     if (!user_lowmem) {
+-    if (!user_lowmem) {
 -        user_lowmem = HVM_BELOW_4G_RAM_END; /* default */
++     if (!user_lowmem) {
 +        uint64_t min_pci_addr = get_min_pci_addr();
 +        if (min_pci_addr && min_pci_addr < HVM_BELOW_4G_RAM_END) {
 +            user_lowmem = min_pci_addr;
