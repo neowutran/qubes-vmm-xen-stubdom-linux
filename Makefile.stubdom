@@ -24,263 +24,263 @@ all: $(VMLINUZ) $(ROOTFS_IMG)
 full: all
 
 ifneq ($(filter full,$(MAKECMDGOALS)),)
-    QEMU_OPTIONS=--enable-libusb --audio-drv-list=pa
-    QEMU_EXTRA_CFLAGS+=-I$(shell pwd)/build/padist/usr/local/include \
-         -I$(shell pwd)/build/padist/usr/local/include/libusb-1.0
-    QEMU_EXTRA_LDFLAGS+=-Wl,-z,nodlopen -Wl,-z,nodump -Wl,-z,noexecstack \
-         -Wl,-rpath-link,$(shell pwd)/build/padist/lib/pulseaudio \
-         -L$(shell pwd)/build/padist/lib
-    ROOTFS_NAME=qemu-stubdom-linux-full-rootfs
-    KERNEL_NAME=qemu-stubdom-linux-full-kernel
-    KERNEL_CONFIG=[0-9][0-9]-*
-    FULL_BUILDDEPS=build/padist/usr/bin/pulseaudio \
-        build/libusb/.installed \
-        build/qrexec/agent/qrexec-agent
+	QEMU_OPTIONS=--enable-libusb --audio-drv-list=pa
+	QEMU_EXTRA_CFLAGS+=-I$(shell pwd)/build/padist/usr/local/include \
+		 -I$(shell pwd)/build/padist/usr/local/include/libusb-1.0
+	QEMU_EXTRA_LDFLAGS+=-Wl,-z,nodlopen -Wl,-z,nodump -Wl,-z,noexecstack \
+		 -Wl,-rpath-link,$(shell pwd)/build/padist/lib/pulseaudio \
+		 -L$(shell pwd)/build/padist/lib
+	ROOTFS_NAME=qemu-stubdom-linux-full-rootfs
+	KERNEL_NAME=qemu-stubdom-linux-full-kernel
+	KERNEL_CONFIG=[0-9][0-9]-*
+	FULL_BUILDDEPS=build/padist/usr/bin/pulseaudio \
+		build/libusb/.installed \
+		build/qrexec/agent/qrexec-agent
 else
-    QEMU_OPTIONS=--disable-libusb --audio-drv-list=
-    QEMU_EXTRA_CFLAGS=
-    QEMU_EXTRA_LDFLAGS=
-    FULL_BUILDDEPS=
-    ROOTFS_NAME=qemu-stubdom-linux-rootfs
-    KERNEL_NAME=qemu-stubdom-linux-kernel
-    KERNEL_CONFIG=[0-4][0-9]-*
+	QEMU_OPTIONS=--disable-libusb --audio-drv-list=
+	QEMU_EXTRA_CFLAGS=
+	QEMU_EXTRA_LDFLAGS=
+	FULL_BUILDDEPS=
+	ROOTFS_NAME=qemu-stubdom-linux-rootfs
+	KERNEL_NAME=qemu-stubdom-linux-kernel
+	KERNEL_CONFIG=[0-4][0-9]-*
 endif
 
 BUSYBOX_PATCHES := $(shell $Q -l busybox)
 
 build/busybox/.extracted: busybox-$(BUSYBOX_VERSION).tar.bz2
-    rm -rf build/busybox
-    mkdir -p build/busybox
-    tar -C build/busybox --strip-components=1 -xf $<
-    touch $@
+	rm -rf build/busybox
+	mkdir -p build/busybox
+	tar -C build/busybox --strip-components=1 -xf $<
+	touch $@
 
 build/busybox/.patched: build/busybox/.extracted busybox/patches/series $(BUSYBOX_PATCHES)
-    @-$Q -C build/busybox -. pop -a
-    @-rm -rf build/busybox/.patches
-    cp -aL busybox/patches build/busybox/.patches
-    $Q -C build/busybox -. push -a
-    touch $@
+	@-$Q -C build/busybox -. pop -a
+	@-rm -rf build/busybox/.patches
+	cp -aL busybox/patches build/busybox/.patches
+	$Q -C build/busybox -. push -a
+	touch $@
 
 build/busybox/config.status: build/busybox/.patched
-    cp busybox/busybox.config build/busybox/.config
-    yes "" | $(MAKE) -C build/busybox oldconfig
-    touch $@
+	cp busybox/busybox.config build/busybox/.config
+	yes "" | $(MAKE) -C build/busybox oldconfig
+	touch $@
 
 build/busybox/busybox: build/busybox/config.status
-    $(MAKE) $(MAKE_PARALLEL) -C build/busybox
-    strip --strip-unneeded build/busybox/busybox_unstripped
-    mv build/busybox/busybox_unstripped build/busybox/busybox
+	$(MAKE) $(MAKE_PARALLEL) -C build/busybox
+	strip --strip-unneeded build/busybox/busybox_unstripped
+	mv build/busybox/busybox_unstripped build/busybox/busybox
 
 PULSEAUDIO_PATCHES := $(shell $Q -l pulseaudio)
 
 build/pulseaudio/.extracted: pulseaudio-$(PULSEAUDIO_VERSION).tar.xz
-    rm -rf build/pulseaudio
-    mkdir -p build/pulseaudio
-    tar -C build/pulseaudio --strip-components=1 -xf $<
-    touch $@
+	rm -rf build/pulseaudio
+	mkdir -p build/pulseaudio
+	tar -C build/pulseaudio --strip-components=1 -xf $<
+	touch $@
 
 build/pulseaudio/src/modules/module-vchan-sink.c: build/pulseaudio/.extracted
-    cp pulseaudio/gui-agent/pulse/*vchan-sink* build/pulseaudio/src/modules/
+	cp pulseaudio/gui-agent/pulse/*vchan-sink* build/pulseaudio/src/modules/
 
 build/pulseaudio/.patched: build/pulseaudio/.extracted pulseaudio/patches/series $(PULSEAUDIO_PATCHES)
-    @-$Q -C build/pulseaudio -. pop -a
-    @-rm -rf build/pulseaudio/.patches
-    cp -aL pulseaudio/patches build/pulseaudio/.patches
-    $Q -C build/pulseaudio -. push -a
-    touch $@
+	@-$Q -C build/pulseaudio -. pop -a
+	@-rm -rf build/pulseaudio/.patches
+	cp -aL pulseaudio/patches build/pulseaudio/.patches
+	$Q -C build/pulseaudio -. push -a
+	touch $@
 
 build/pulseaudio/config.status: build/pulseaudio/.patched  build/pulseaudio/src/modules/module-vchan-sink.c
-    cd build/pulseaudio && meson setup build/ \ 
-    -Dglib=disabled \
-    -Dx11=disabled \
-    -Doss-output=disabled \
-    -Djack=disabled \
-    -Dlirc=disabled \
-    -Dtcpwrap=disabled \
-    -Dbluez5=disabled \
-    -Dgsettings=disabled \
-    -Dwebrtc-aec=disabled \
-    -Dsystemd=disabled \
-    -Ddbus=disabled \
-    -Dgtk=disabled \
-    -Dalsa=disabled \
-    -Ddatabase=simple \
-    -Dfftw=disabled \
-    -Dspeex=disabled \
-    -Dsoxr=disabled \
-    -Dman=false \
-    -Dgstreamer=disabled \
-    -Dopenssl=disabled \
-    -Dudev=disabled \
-    -Dipv6=false \
-    -Dhal-compat=false \
-    -Dtcpwrap=disabled \
-    -Dasyncns=disabled \
-    -Dtests=false \
-    -Dmodlibexecdir=/lib \
-    -Ddoxygen=false \
-    -Dlibdir=/lib
+	cd build/pulseaudio && meson setup build/ \ 
+	-Dglib=disabled \
+	-Dx11=disabled \
+	-Doss-output=disabled \
+	-Djack=disabled \
+	-Dlirc=disabled \
+	-Dtcpwrap=disabled \
+	-Dbluez5=disabled \
+	-Dgsettings=disabled \
+	-Dwebrtc-aec=disabled \
+	-Dsystemd=disabled \
+	-Ddbus=disabled \
+	-Dgtk=disabled \
+	-Dalsa=disabled \
+	-Ddatabase=simple \
+	-Dfftw=disabled \
+	-Dspeex=disabled \
+	-Dsoxr=disabled \
+	-Dman=false \
+	-Dgstreamer=disabled \
+	-Dopenssl=disabled \
+	-Dudev=disabled \
+	-Dipv6=false \
+	-Dhal-compat=false \
+	-Dtcpwrap=disabled \
+	-Dasyncns=disabled \
+	-Dtests=false \
+	-Dmodlibexecdir=/lib \
+	-Ddoxygen=false \
+	-Dlibdir=/lib
 
 build/padist/usr/bin/pulseaudio: build/pulseaudio/config.status
-    cd build/pulseaudio/build && meson install --strip --destdir DESTDIR=$(shell pwd)/../../padist
+	cd build/pulseaudio/build && meson install --strip --destdir DESTDIR=$(shell pwd)/../../padist
 
 build/libusb/.extracted: libusb-$(LIBUSB_VERSION).tar.bz2
-    rm -rf build/libusb
-    mkdir -p build/libusb
-    tar -C build/libusb --strip-components=1 -xf $<
-    touch $@
+	rm -rf build/libusb
+	mkdir -p build/libusb
+	tar -C build/libusb --strip-components=1 -xf $<
+	touch $@
 
 build/libusb/config.status: build/libusb/.extracted
-    cd build/libusb && ./configure \
-            --disable-static \
-            --disable-udev \
-            --libdir=/lib
+	cd build/libusb && ./configure \
+			--disable-static \
+			--disable-udev \
+			--libdir=/lib
 
 build/libusb/.installed: build/libusb/config.status
-    $(MAKE) $(MAKE_PARALLEL) -C build/libusb
-    $(MAKE)    install-strip -C build/libusb DESTDIR=$(shell pwd)/build/padist
-    touch $@
+	$(MAKE) $(MAKE_PARALLEL) -C build/libusb
+	$(MAKE)	install-strip -C build/libusb DESTDIR=$(shell pwd)/build/padist
+	touch $@
 
 build/qrexec/agent/qrexec-agent:
-    rm -rf build/qrexec
-    mkdir -p build
-    cp -a qrexec build/
-    make BACKEND_VMM=xen -C build/qrexec/libqrexec all
-    make BACKEND_VMM=xen -C build/qrexec/agent qrexec-client-vm qrexec-agent qrexec-fork-server
+	rm -rf build/qrexec
+	mkdir -p build
+	cp -a qrexec build/
+	make BACKEND_VMM=xen -C build/qrexec/libqrexec all
+	make BACKEND_VMM=xen -C build/qrexec/agent qrexec-client-vm qrexec-agent qrexec-fork-server
 
 QEMU_PATCHES := $(shell $Q -l qemu)
 
 build/qemu/.extracted: qemu-$(QEMU_VERSION).tar.xz
-    rm -rf build/qemu
-    mkdir -p build/qemu
-    tar -C build/qemu --strip-components=1 -xf $<
-    rm build/qemu/pc-bios/*.{rom,bin,dtb} # remove prebuilt binaries
-    touch $@
+	rm -rf build/qemu
+	mkdir -p build/qemu
+	tar -C build/qemu --strip-components=1 -xf $<
+	rm build/qemu/pc-bios/*.{rom,bin,dtb} # remove prebuilt binaries
+	touch $@
 
 build/qemu/.patched: build/qemu/.extracted qemu/patches/series $(QEMU_PATCHES)
-    @-$Q -C build/qemu -. pop -a
-    @-rm -rf build/qemu/.patches
-    cp -aL qemu/patches build/qemu/.patches
-    $Q -C build/qemu -. push -a
-    touch $@
+	@-$Q -C build/qemu -. pop -a
+	@-rm -rf build/qemu/.patches
+	cp -aL qemu/patches build/qemu/.patches
+	$Q -C build/qemu -. push -a
+	touch $@
 
 QEMU_GUI_AGENT_FILES := $(shell find qemu/gui-agent -type f \! \( -name '*.sw?' -o -name '*~' -o -name '.*' -o -name '*.patch' \) | sort)
 
 build/qemu/.gui-agent-copied-in: build/qemu/.extracted $(QEMU_GUI_AGENT_FILES)
-    rm -rf build/qemu/ui/gui-agent
-    cp -a qemu/gui-agent build/qemu/ui/
-    # generates qubes-keycode2scancode.c
-    make -C build/qemu/ui/gui-agent/gui-agent-qemu/
-    touch $@
+	rm -rf build/qemu/ui/gui-agent
+	cp -a qemu/gui-agent build/qemu/ui/
+	# generates qubes-keycode2scancode.c
+	make -C build/qemu/ui/gui-agent/gui-agent-qemu/
+	touch $@
 
 export QEMU_PKG_CONFIG_FLAGS=--with-path=$(shell pwd)/build/padist/lib/pkgconfig
 
 build/qemu/config.status: build/qemu/.patched build/qemu/.gui-agent-copied-in $(FULL_BUILDDEPS)
-    cd build/qemu && ./configure \
-        --target-list=i386-softmmu \
-        --enable-xen \
-        --enable-xen-pci-passthrough \
-        --disable-werror \
-        --disable-sdl \
-        --disable-kvm \
-        --disable-gtk \
-        --enable-fdt \
-        --disable-slirp \
-        --enable-pie \
-        --disable-docs \
-        --disable-vhost-net \
-        --disable-spice \
-        --disable-guest-agent \
-        --disable-smartcard \
-        --disable-vnc \
-        --disable-spice \
-        --enable-trace-backends=log \
-        --disable-gnutls \
-        --disable-nettle \
-        --disable-gcrypt \
-        --disable-vte \
-        --disable-curses \
-        --disable-cocoa \
-        --disable-virtfs \
-        --disable-brlapi \
-        --disable-curl \
-        --disable-rdma \
-        --disable-vde \
-        --disable-netmap \
-        --disable-linux-aio \
-        --disable-cap-ng \
-        --disable-attr \
-        --disable-rbd \
-        --disable-libiscsi \
-        --disable-libnfs \
-        --disable-usb-redir \
-        --disable-lzo \
-        --disable-snappy \
-        --disable-bzip2 \
-        --enable-seccomp \
-        --disable-coroutine-pool \
-        --disable-glusterfs \
-        --disable-tpm \
-        --disable-libssh \
-        --disable-numa \
-        --disable-qom-cast-debug \
-        --disable-virglrenderer \
-        --enable-stubdom \
-        --disable-tools \
-        --disable-replication \
-        --disable-hax \
-        --disable-opengl \
-        --disable-virglrenderer \
-        --disable-blobs \
-        --disable-tcg \
-        --disable-crypto-afalg \
-        --disable-live-block-migration \
-        --disable-vhost-user \
-        --disable-vhost-crypto \
-        --disable-vdi \
-        --disable-bochs \
-        --disable-cloop \
-        --disable-dmg \
-        --disable-qcow1 \
-        --disable-parallels \
-        --disable-vvfat \
-        --disable-qed \
-        --disable-auth-pam \
-        --enable-rng-none \
-        ${QEMU_OPTIONS} \
-        --cxx=/non-existent \
-        --extra-cflags="-DXEN_PT_LOGGING_ENABLED=1 ${QEMU_EXTRA_CFLAGS}" \
-        --extra-ldflags="${QEMU_EXTRA_LDFLAGS}" \
-        --prefix=/usr
+	cd build/qemu && ./configure \
+		--target-list=i386-softmmu \
+		--enable-xen \
+		--enable-xen-pci-passthrough \
+		--disable-werror \
+		--disable-sdl \
+		--disable-kvm \
+		--disable-gtk \
+		--enable-fdt \
+		--disable-slirp \
+		--enable-pie \
+		--disable-docs \
+		--disable-vhost-net \
+		--disable-spice \
+		--disable-guest-agent \
+		--disable-smartcard \
+		--disable-vnc \
+		--disable-spice \
+		--enable-trace-backends=log \
+		--disable-gnutls \
+		--disable-nettle \
+		--disable-gcrypt \
+		--disable-vte \
+		--disable-curses \
+		--disable-cocoa \
+		--disable-virtfs \
+		--disable-brlapi \
+		--disable-curl \
+		--disable-rdma \
+		--disable-vde \
+		--disable-netmap \
+		--disable-linux-aio \
+		--disable-cap-ng \
+		--disable-attr \
+		--disable-rbd \
+		--disable-libiscsi \
+		--disable-libnfs \
+		--disable-usb-redir \
+		--disable-lzo \
+		--disable-snappy \
+		--disable-bzip2 \
+		--enable-seccomp \
+		--disable-coroutine-pool \
+		--disable-glusterfs \
+		--disable-tpm \
+		--disable-libssh \
+		--disable-numa \
+		--disable-qom-cast-debug \
+		--disable-virglrenderer \
+		--enable-stubdom \
+		--disable-tools \
+		--disable-replication \
+		--disable-hax \
+		--disable-opengl \
+		--disable-virglrenderer \
+		--disable-blobs \
+		--disable-tcg \
+		--disable-crypto-afalg \
+		--disable-live-block-migration \
+		--disable-vhost-user \
+		--disable-vhost-crypto \
+		--disable-vdi \
+		--disable-bochs \
+		--disable-cloop \
+		--disable-dmg \
+		--disable-qcow1 \
+		--disable-parallels \
+		--disable-vvfat \
+		--disable-qed \
+		--disable-auth-pam \
+		--enable-rng-none \
+		${QEMU_OPTIONS} \
+		--cxx=/non-existent \
+		--extra-cflags="-DXEN_PT_LOGGING_ENABLED=1 ${QEMU_EXTRA_CFLAGS}" \
+		--extra-ldflags="${QEMU_EXTRA_LDFLAGS}" \
+		--prefix=/usr
 
 build/qemu/i386-softmmu/qemu-system-i386: build/qemu/.patched build/qemu/config.status
-    $(MAKE) $(MAKE_PARALLEL) -C build/qemu/roms seavgabios-{cirrus,stdvga}
-    #$(MAKE) $(MAKE_PARALLEL) -C build/qemu/pc-bios/optionrom linuxboot.bin linuxboot_dma.bin
-    $(MAKE) $(MAKE_PARALLEL) -C build/qemu
+	$(MAKE) $(MAKE_PARALLEL) -C build/qemu/roms seavgabios-{cirrus,stdvga}
+	#$(MAKE) $(MAKE_PARALLEL) -C build/qemu/pc-bios/optionrom linuxboot.bin linuxboot_dma.bin
+	$(MAKE) $(MAKE_PARALLEL) -C build/qemu
 
 LINUX_PATCHES := $(shell $Q -l linux)
 
 build/linux/.extracted: linux-$(LINUX_VERSION).tar
-    rm -rf build/linux
-    mkdir -p build/linux
-    tar -C build/linux --strip-components=1 -xf $<
-    touch $@
+	rm -rf build/linux
+	mkdir -p build/linux
+	tar -C build/linux --strip-components=1 -xf $<
+	touch $@
 
 build/linux/.patched: build/linux/.extracted linux/patches/series $(LINUX_PATCHES)
-    @-$Q -C build/linux -. pop -a
-    @-rm -rf build/linux/.patches
-    cp -a linux/patches build/linux/.patches
-    $Q -C build/linux -. push -a
-    touch $@
+	@-$Q -C build/linux -. pop -a
+	@-rm -rf build/linux/.patches
+	cp -a linux/patches build/linux/.patches
+	$Q -C build/linux -. push -a
+	touch $@
 
 build/linux/.config: $(sort $(wildcard linux/config/[0-9][0-9]-*)) build/linux/.extracted
-    cd build/linux; env -u MAKEFLAGS ./scripts/kconfig/merge_config.sh -n /dev/null ../../linux/config/$(KERNEL_CONFIG)
+	cd build/linux; env -u MAKEFLAGS ./scripts/kconfig/merge_config.sh -n /dev/null ../../linux/config/$(KERNEL_CONFIG)
 
 $(VMLINUZ): build/linux/.patched build/linux/.config
-    $(MAKE) $(MAKE_PARALLEL) -C build/linux
+	$(MAKE) $(MAKE_PARALLEL) -C build/linux
 
 helpers/vchan-socket-proxy helpers/add-fd: helpers/vchan-socket-proxy.c helpers/add-fd.c
-    $(MAKE) $(MAKE_PARALLEL) -C helpers
+	$(MAKE) $(MAKE_PARALLEL) -C helpers
 
 DRACUT_INSTALL=/usr/lib/dracut/dracut-install
 
@@ -288,11 +288,11 @@ rootfs/gen: $(DRACUT_INSTALL)
 
 export DRACUT_INSTALL
 $(ROOTFS_IMG): rootfs/gen $(STUBDOM_DISK_FILE)
-    env -u MAKELEVEL -u MAKEFLAGS -u MFLAGS ./$<
+	env -u MAKELEVEL -u MAKEFLAGS -u MFLAGS ./$<
 
 install: $(VMLINUZ) $(ROOTFS_IMG)
-    install -D -m 444 $(VMLINUZ) $(DESTDIR)$(STUBDOM_BINDIR)/$(KERNEL_NAME)
-    install -D -m 444 $(ROOTFS_IMG) $(DESTDIR)$(STUBDOM_BINDIR)/$(ROOTFS_NAME)
+	install -D -m 444 $(VMLINUZ) $(DESTDIR)$(STUBDOM_BINDIR)/$(KERNEL_NAME)
+	install -D -m 444 $(ROOTFS_IMG) $(DESTDIR)$(STUBDOM_BINDIR)/$(ROOTFS_NAME)
 
 clean:
-    rm -rf build
+	rm -rf build
