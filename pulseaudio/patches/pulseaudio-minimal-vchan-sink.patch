@@ -1,18 +1,25 @@
---- a/src/Makefile.am	2019-12-16 10:08:27.000000000 +0300
-+++ b/src/Makefile.am	2020-05-27 16:19:57.109458668 +0300
-@@ -2301,3 +2301,15 @@ coverage:
- endif
+diff --git a/src/modules/meson.build b/src/modules/meson.build
+index cdf372c..a25664b 100644
+--- a/src/modules/meson.build
++++ b/src/modules/meson.build
+@@ -61,6 +61,11 @@ all_modules = [
+   [ 'module-virtual-sink', 'module-virtual-sink.c' ],
+   [ 'module-virtual-source', 'module-virtual-source.c' ],
+   [ 'module-volume-restore', 'module-volume-restore.c' ],
++  
++  # QUBES OS MODULE HERE
++  [ 'module-vchan-sink-la', 'module-vchan-sink.c', ['module-vchan-sink-symdef.h','qubes-vchan-sink.h'], ['-I/usr/include/vchan-xen', '-Dfoomodulepipecustomsymdeffoo'], [], [] ],
++  
++
+ ]
  
- .PHONY: massif update-all update-ffmpeg update-map-file coverage
-+
-+# vchan sink module
-+module_vchan_sink_la_SOURCES = modules/module-vchan-sink.c
-+module_vchan_sink_la_LDFLAGS = $(MODULE_LDFLAGS) -lvchan-xen 
-+module_vchan_sink_la_LIBADD = $(MODULE_LIBADD)
-+module_vchan_sink_la_CFLAGS = $(AM_CFLAGS) -I/usr/include/vchan-xen -DPA_MODULE_NAME=module_vchan_sink -Dfoomodulepipecustomsymdeffoo
-+
-+modlibexec_LTLIBRARIES = libprotocol-native.la \
-+                         module-native-protocol-unix.la \
-+			 module-vchan-sink.la
-+bin_PROGRAMS = pulseaudio pacat pactl
-+lib_LTLIBRARIES = libpulse.la
+ if host_machine.system() == 'windows'
+@@ -310,7 +315,7 @@ foreach m : all_modules
+     install_rpath : rpath_dirs,
+     install_dir : modlibexecdir,
+     dependencies : [thread_dep, libpulse_dep, libpulsecommon_dep, libpulsecore_dep, libintl_dep, platform_dep, platform_socket_dep] + extra_deps,
+-    link_args : [nodelete_link_args, '-Wl,--no-undefined' ],
++    link_args : [nodelete_link_args, '-Wl,--no-undefined', '-lvchan-xen' ],
+     link_with : extra_libs,
+     name_prefix : '',
+     implicit_include_directories : false)
