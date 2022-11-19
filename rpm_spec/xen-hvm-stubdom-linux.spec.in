@@ -44,7 +44,9 @@ BuildRequires: libusb-compat-0.1-devel
 BuildRequires: gettext-devel
 BuildRequires: libtool-ltdl-devel
 BuildRequires: libsndfile-devel
+# Probably not usefull anymore
 BuildRequires: m4
+BuildRequires: dbus-devel
 
 # QEMU Qubes gui-agent
 BuildRequires: qubes-gui-common-devel
