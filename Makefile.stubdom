@@ -90,11 +90,11 @@ build/pulseaudio/.patched: build/pulseaudio/.extracted pulseaudio/patches/series
 	touch $@
 
 build/pulseaudio/config.status: build/pulseaudio/.patched  build/pulseaudio/src/modules/module-vchan-sink.c
-	cd build/pulseaudio && pwd && ls -lsa && meson setup build/ \ 
+	cd build/pulseaudio && pwd && ls -lsa && meson setup build/ \
 			-Dglib=disabled \
 			-Dx11=disabled \
 			-Doss-output=disabled \
-		    -Djack=disabled \
+			-Djack=disabled \
 			-Dlirc=disabled \
 			-Dtcpwrap=disabled \
 			-Dbluez5=disabled \
