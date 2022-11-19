@@ -90,7 +90,7 @@ build/pulseaudio/.patched: build/pulseaudio/.extracted pulseaudio/patches/series
 	touch $@
 
 build/pulseaudio/config.status: build/pulseaudio/.patched  build/pulseaudio/src/modules/module-vchan-sink.c
-	cd build/pulseaudio && pwd && ls -lsa && meson setup build/ \
+	cd build/pulseaudio && meson setup build/ \
 			-Dglib=disabled \
 			-Dx11=disabled \
 			-Doss-output=disabled \
@@ -122,7 +122,7 @@ build/pulseaudio/config.status: build/pulseaudio/.patched  build/pulseaudio/src/
 			-Dlibdir=/lib
 
 build/padist/usr/bin/pulseaudio: build/pulseaudio/config.status
-	cd build/pulseaudio/build && meson install --strip --destdir DESTDIR=$(shell pwd)/../../padist
+	cd build/pulseaudio/build && meson install --strip --destdir $(shell pwd)/../../padist
 
 build/libusb/.extracted: libusb-$(LIBUSB_VERSION).tar.bz2
 	rm -rf build/libusb
