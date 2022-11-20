@@ -223,7 +223,7 @@ build/qemu/config.status: build/qemu/.patched build/qemu/.gui-agent-copied-in $(
 		--disable-linux-aio \
 		--disable-libssh \
 		--disable-gio \
-		--disable-fdt \
+		--enable-fdt \
 		--disable-slirp \
 		--enable-pie \
 		--disable-docs \
