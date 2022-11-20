@@ -184,7 +184,7 @@ build/qemu/config.status: build/qemu/.patched build/qemu/.gui-agent-copied-in $(
 		--disable-sdl \
 		--disable-kvm \
 		--disable-gtk \
-		--disable-fdt \
+		--enable-fdt \
 		--disable-slirp \
 		--enable-pie \
 		--disable-docs \
