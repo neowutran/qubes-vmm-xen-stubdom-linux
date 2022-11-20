@@ -220,7 +220,7 @@ build/qemu/config.status: build/qemu/.patched build/qemu/.gui-agent-copied-in $(
 		--disable-netmap \
 		--disable-l2tpv3 \
 		--disable-canokey \
-		--disable-linux_aio \
+		--disable-linux-aio \
 		--disable-libssh \
 		--disable-gio \
 		--disable-fdt \
