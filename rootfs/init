@@ -28,7 +28,7 @@ if test -e /bin/qrexec-agent; then
 fi
 
 # add audiodev conf to cmdline and run pulseaudio 
-audio_model=$(echo "$dm_args" | sed -n '/^-soundhw/ {n;p}')
+audio_model=$(echo "$dm_args" | sed -n '/^-audio/ {n;p}')
 if [ -n "$audio_model" ] ; then
     model_args=
     if [ "$audio_model" == "ich6" ] ; then
