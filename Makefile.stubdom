@@ -209,7 +209,7 @@ build/qemu/config.status: build/qemu/.patched build/qemu/.gui-agent-copied-in $(
 		--disable-vduse-blk-export \
 		--disable-libvduse \
 		--disable-vhost-vdpa \
-		--disable-pa \
+		--enable-pa \
 		--disable-oss \
 		--disable-jack \
 		--disable-dsound \
