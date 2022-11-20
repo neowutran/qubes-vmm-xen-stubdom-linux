@@ -8,7 +8,7 @@ index cdf372c..a25664b 100644
    [ 'module-volume-restore', 'module-volume-restore.c' ],
 +  
 +  # QUBES OS MODULE HERE
-+  [ 'module-vchan-sink-la', 'module-vchan-sink.c', ['module-vchan-sink-symdef.h','qubes-vchan-sink.h'], ['-I/usr/include/vchan-xen', '-Dfoomodulepipecustomsymdeffoo'], [], [] ],
++  [ 'module-vchan-sink', 'module-vchan-sink.c', ['module-vchan-sink-symdef.h','qubes-vchan-sink.h'], ['-I/usr/include/vchan-xen', '-Dfoomodulepipecustomsymdeffoo'], [], [] ],
 +  
 +
  ]
