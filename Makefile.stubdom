@@ -184,7 +184,46 @@ build/qemu/config.status: build/qemu/.patched build/qemu/.gui-agent-copied-in $(
 		--disable-sdl \
 		--disable-kvm \
 		--disable-gtk \
-		--enable-fdt \
+		--disable-qga-vss \
+		--disable-tcg \
+		--disable-selinux \
+		--disable-live-block-migration \
+		--disable-replication \
+		--disable-bochs \
+		--disable-cloop \
+		--disable-dmg \
+		--disable-vdi \
+		--disable-qcow1 \
+		--disable-vvfat \
+		--disable-qed \
+		--disable-parallels \
+		--disable-block-drv-whitelist-in-tools \
+		--disable-coroutine-pool \
+		--disable-debug-mutex \
+		--disable-debug-stack-usage \
+		--disable-qom-cast-debug \
+		--disable-gprof \
+		--disable-profiler \
+		--disable-slirp-smbd \
+		--disable-capstone \
+		--disable-vduse-blk-export \
+		--disable-libvduse \
+		--disable-vhost-vdpa \
+		--disable-pa \
+		--disable-oss \
+		--disable-jack \
+		--disable-dsound \
+		--disable-coreaudio \
+		--disable-alsa \
+		--disable-vmnet \
+		--disable-vde \
+		--disable-netmap \
+		--disable-l2tpv3 \
+		--disable-canokey \
+		--disable-linux_aio \
+		--disable-libssh \
+		--disable-gio \
+		--disable-fdt \
 		--disable-slirp \
 		--enable-pie \
 		--disable-docs \
