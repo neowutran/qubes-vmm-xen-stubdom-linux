@@ -1,0 +1,13 @@
+diff --git a/hw/xen/xen_pt_config_init.c b/hw/xen/xen_pt_config_init.c
+index 4758514dd..e0abf7e45 100644
+--- a/hw/xen/xen_pt_config_init.c
++++ b/hw/xen/xen_pt_config_init.c
+@@ -1981,6 +1981,8 @@ static void xen_pt_config_reg_init(XenPCIPassthroughState *s,
+         } else
+             val = data;
+ 
++        XEN_PT_LOG(&s->dev,"NEOWUTRAN. val=0x%04x, size_mask=0x%04x, reg_size=0x%04x.\n",val, size_mask, reg->size);
++
+         if (val & ~size_mask) {
+             error_setg(errp, "Offset 0x%04x:0x%04x expands past"
+                     " register size (%d)", offset, val, reg->size);

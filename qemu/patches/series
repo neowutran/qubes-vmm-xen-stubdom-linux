@@ -18,3 +18,4 @@
 seabios-python3.patch
 qemu-stub-xengt-support.patch
 Fix-TOLUD-for-PCI-passthroughed-devices.patch
+neowutran_log.patch
