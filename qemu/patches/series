@@ -3,6 +3,7 @@
 0003-xen-hvm-handle-CONFIG_STUBDOM.patch
 0004-QubesGUI-display-options.patch
 0005-Disable-MSI-X-caps.patch
+0006-xen-round-pci-region-sizes.patch
 0007-Disable-NIC-option-ROM.patch
 0008-xen-fix-stubdom-PCI-addr.patch
 0009-xen-fix-emu-mask.patch
