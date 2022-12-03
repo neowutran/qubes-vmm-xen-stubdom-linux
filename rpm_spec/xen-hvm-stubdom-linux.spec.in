@@ -36,9 +36,7 @@ BuildRequires: libtool
 BuildRequires: libseccomp-devel
 BuildRequires: pixman-devel
 BuildRequires: hostname
-BuildRequires: fuse-devel
-BuildRequires: libusb1-devel
-BuildRequires: libusb-compat-0.1-devel
+BuildRequires: libusb-devel
 
 # pulseaudio
 BuildRequires: gettext-devel
