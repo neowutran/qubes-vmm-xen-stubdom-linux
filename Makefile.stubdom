@@ -117,9 +117,9 @@ build/pulseaudio/config.status: build/pulseaudio/.patched  build/pulseaudio/src/
 			-Dtcpwrap=disabled \
 			-Dasyncns=disabled \
 			-Dtests=false \
-			-Dmodlibexecdir=/lib \
+			-Dmodlibexecdir=/usr/local/lib \
 			-Ddoxygen=false \
-			-Dlibdir=/lib
+			-Dlibdir=/usr/local/lib
 
 build/padist/usr/bin/pulseaudio: build/pulseaudio/config.status
 	cd build/pulseaudio/build && meson install --strip --destdir $(shell pwd)/build/padist
