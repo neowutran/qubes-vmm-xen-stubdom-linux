@@ -122,7 +122,7 @@ build/pulseaudio/config.status: build/pulseaudio/.patched  build/pulseaudio/src/
 			-Dlibdir=/usr/local/lib
 
 build/padist/usr/bin/pulseaudio: build/pulseaudio/config.status
-	cd build/pulseaudio/build && DESTDIR=$(shell pwd)/build/padist meson install && cp -R $(shell pwd)/build/padist/usr/local/lib/* $(shell pwd)/build/padist/lib/
+	cd build/pulseaudio/build && DESTDIR=$(shell pwd)/build/padist meson install && cp -R $(shell pwd)/build/padist/usr/local/lib/ $(shell pwd)/build/padist/
 
 build/libusb/.extracted: libusb-$(LIBUSB_VERSION).tar.bz2
 	rm -rf build/libusb
