@@ -28,10 +28,10 @@ if test -e /bin/qrexec-agent; then
 fi
 
 # add audiodev conf to cmdline and run pulseaudio 
-audio_model=$(echo "$dm_args" | sed -n '/^-soundhw/ {n;p}')
+audio_model=$(echo "$dm_args" | sed -n '/^\(intel-hda\|ac97\|adlib\|es1370\|cs4231a\|gus\|sb16\)$/ {p}')
 if [ -n "$audio_model" ] ; then
     model_args=
-    if [ "$audio_model" == "ich6" ] ; then
+    if [ "$audio_model" == "intel-hda" ] ; then
 	model_args=$',timer-period=1000,out.buffer-length=4000,in.latency=50000'
     fi
     export XDG_CONFIG_HOME='/tmp'
