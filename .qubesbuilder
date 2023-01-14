@@ -23,5 +23,5 @@ source:
     pubkeys:
     - keys/busybox/vda_pubkey.asc
   - url: https://freedesktop.org/software/pulseaudio/releases/pulseaudio-16.1.tar.xz
-    sha256: https://freedesktop.org/software/pulseaudio/releases/pulseaudio-16.1.tar.xz
+    sha256: https://freedesktop.org/software/pulseaudio/releases/pulseaudio-16.1.tar.xz.sha256
   - url: https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2
