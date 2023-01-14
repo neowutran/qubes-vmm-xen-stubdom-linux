@@ -15,6 +15,7 @@ URL: https://www.qubes-os.org/
 
 Requires: xen-libs >= 2001:4.14.3-5
 
+Provides: xen-hvm = %{version}-%{release}
 Provides: xen-hvm-stubdom-gvt
 
 BuildRequires: quilt
