@@ -48,6 +48,7 @@ BuildRequires: gettext-devel
 BuildRequires: libtool-ltdl-devel
 BuildRequires: libsndfile-devel
 BuildRequires: pulseaudio-libs
+BuildRequires: pulseaudio-libs-devel
 # Probably not usefull anymore
 BuildRequires: m4
 BuildRequires: dbus-devel
