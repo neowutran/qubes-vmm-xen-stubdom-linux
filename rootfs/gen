@@ -67,7 +67,7 @@ if [[ -e "$PWD/build/qrexec/agent/qrexec-agent" ]]; then
 	export LD_LIBRARY_PATH="$PWD/build/padist/lib:$PWD/build/padist/lib/pulseaudio:$PWD/build/qrexec/libqrexec"
     fi
     inst build/padist/usr/local/bin/pulseaudio /bin/pulseaudio
-    for mod in build/padist/lib/module-*.so; do
+    for mod in build/padist/usr/local/lib/module-*.so; do
 	inst "$mod" "/lib/$(basename "$mod")"
     done
 fi
