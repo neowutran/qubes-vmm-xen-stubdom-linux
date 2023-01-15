@@ -47,6 +47,7 @@ BuildRequires: elfutils-libelf-devel
 BuildRequires: gettext-devel
 BuildRequires: libtool-ltdl-devel
 BuildRequires: libsndfile-devel
+BuildRequires: pulseaudio-libs
 # Probably not usefull anymore
 BuildRequires: m4
 BuildRequires: dbus-devel
