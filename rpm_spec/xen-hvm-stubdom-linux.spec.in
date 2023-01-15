@@ -49,6 +49,7 @@ BuildRequires: libtool-ltdl-devel
 BuildRequires: libsndfile-devel
 BuildRequires: pulseaudio-libs
 BuildRequires: pulseaudio-libs-devel
+BuildRequires: meson
 # Probably not usefull anymore
 BuildRequires: m4
 BuildRequires: dbus-devel
