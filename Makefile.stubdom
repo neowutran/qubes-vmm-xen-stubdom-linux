@@ -208,6 +208,7 @@ export QEMU_PKG_CONFIG_FLAGS=--with-path=$(shell pwd)/build/padist/lib/pkgconfig
 
 build/qemu/config.status: build/qemu/.patched build/qemu/.gui-agent-copied-in $(FULL_BUILDDEPS)
 	cd build/qemu && ./configure \
+		--without-default-features \
 		--target-list=i386-softmmu \
 		--enable-xen \
 		--enable-xen-pci-passthrough \
