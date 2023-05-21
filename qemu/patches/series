@@ -17,6 +17,7 @@
 0017-IGD-move-enabling-opregion-access-to-libxl.patch
 0018-pc-bios-ignore-prebuilt-binaries.patch
 0019-hw-xen-xen_pt-fix-uninitialized-variable.patch
+0020-svgamodes-Add-all-HD-and-QXGA-resolutions.patch
 seabios-python3.patch
 vgasrc-ignore-.node.gnu.property-binutils-2.36-suppo.patch
 qemu-stub-xengt-support.patch
