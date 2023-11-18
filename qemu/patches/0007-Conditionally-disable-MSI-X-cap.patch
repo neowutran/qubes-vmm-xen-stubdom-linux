@@ -1,8 +1,8 @@
-From 45791f82e3e72834cd171d73d81164d798098517 Mon Sep 17 00:00:00 2001
+From f2c02bb408c269c56d9036557569175bd359a1a0 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Marek=20Marczykowski-G=C3=B3recki?=
  <marmarek@invisiblethingslab.com>
 Date: Fri, 22 Sep 2023 23:19:51 +0200
-Subject: [PATCH 3/3] Conditionally disable MSI-X cap
+Subject: [PATCH 07/21] Conditionally disable MSI-X cap
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit

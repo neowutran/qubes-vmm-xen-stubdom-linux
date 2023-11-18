@@ -1,8 +1,8 @@
-From 335abdfbf406adbdbb608c055b6d2ba6c1d83b74 Mon Sep 17 00:00:00 2001
+From 446d3391d0e6d070f71493a739295097fce13071 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Marek=20Marczykowski-G=C3=B3recki?=
  <marmarek@invisiblethingslab.com>
 Date: Mon, 26 Apr 2021 05:40:07 +0200
-Subject: [PATCH] i386: load kernel on xen using DMA
+Subject: [PATCH 15/21] i386: load kernel on xen using DMA
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -23,10 +23,10 @@ Signed-off-by: Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/hw/i386/pc.c b/hw/i386/pc.c
-index c2b9d62a35..07de8a9af0 100644
+index 3109d5e0e0..b8aa2f97b8 100644
 --- a/hw/i386/pc.c
 +++ b/hw/i386/pc.c
-@@ -834,7 +834,8 @@ void xen_load_linux(PCMachineState *pcms)
+@@ -813,7 +813,8 @@ void xen_load_linux(PCMachineState *pcms)
  
      assert(MACHINE(pcms)->kernel_filename != NULL);
  
@@ -37,5 +37,5 @@ index c2b9d62a35..07de8a9af0 100644
      rom_set_fw(fw_cfg);
  
 -- 
-2.31.1
+2.41.0
 

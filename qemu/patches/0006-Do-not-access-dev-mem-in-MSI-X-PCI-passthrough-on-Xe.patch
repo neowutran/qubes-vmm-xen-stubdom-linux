@@ -1,8 +1,8 @@
-From 3d1059895e92448d0a53b42b76a4282cd2bd3005 Mon Sep 17 00:00:00 2001
+From 4f77420adc605fdb5841f27a7d3ffaba83e8a849 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Marek=20Marczykowski-G=C3=B3recki?=
  <marmarek@invisiblethingslab.com>
 Date: Thu, 22 Sep 2022 22:39:39 +0200
-Subject: [PATCH 2/3] Do not access /dev/mem in MSI-X PCI passthrough on Xen
+Subject: [PATCH 06/21] Do not access /dev/mem in MSI-X PCI passthrough on Xen
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -25,12 +25,6 @@ Removing /dev/mem access is useful to work within stubdomain, and
 necessary when dom0 kernel runs in lockdown mode.
 
 Signed-off-by: Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>
----
-Changes in v2:
-- Make change conditional on new Xen version (tested via
-  XENFEAT_dm_msix_all_writes)
-
-FIXME: separate adding XENFEAT_dm_msix_all_writes to another patch
 ---
  hw/xen/xen_pt.h     |  9 +++++
  hw/xen/xen_pt_msi.c | 89 ++++++++++++++++++++++++++-------------------

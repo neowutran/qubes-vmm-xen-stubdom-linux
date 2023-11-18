@@ -26,7 +26,7 @@ full: all
 ifneq ($(filter full,$(MAKECMDGOALS)),)
     PKG_CONFIG_LIBDIR=$(shell pwd)/build/pulseaudio:$(shell pwd)/build/libusb
     export PKG_CONFIG_LIBDIR
-    QEMU_OPTIONS=--enable-libusb --audio-drv-list=pa
+    QEMU_OPTIONS=--enable-libusb --enable-pa --audio-drv-list=pa
     QEMU_EXTRA_CFLAGS+=-I$(shell pwd)/build/padist/usr/local/include \
 	     -I$(shell pwd)/build/padist/usr/local/include/libusb-1.0
     QEMU_EXTRA_LDFLAGS+=-Wl,-z,nodlopen -Wl,-z,nodump -Wl,-z,noexecstack \
@@ -216,7 +216,6 @@ build/qemu/config.status: build/qemu/.patched build/qemu/.gui-agent-copied-in $(
 		--disable-sdl \
 		--disable-kvm \
 		--disable-gtk \
-		--disable-fdt \
 		--disable-slirp \
 		--enable-pie \
 		--disable-docs \
@@ -255,21 +254,14 @@ build/qemu/config.status: build/qemu/.patched build/qemu/.gui-agent-copied-in $(
 		--disable-tpm \
 		--disable-libssh \
 		--disable-numa \
-		--disable-tcmalloc \
-		--disable-jemalloc \
-		--disable-vhost-scsi \
 		--disable-qom-cast-debug \
 		--disable-virglrenderer \
 		--enable-stubdom \
 		--disable-tools \
 		--disable-replication \
-		--disable-vhost-vsock \
 		--disable-hax \
-		--disable-vhost-vsock \
 		--disable-opengl \
 		--disable-virglrenderer \
-		--disable-xfsctl \
-		--disable-blobs \
 		--disable-tcg \
 		--disable-crypto-afalg \
 		--disable-live-block-migration \
@@ -295,6 +287,7 @@ build/qemu/i386-softmmu/qemu-system-i386: build/qemu/.patched build/qemu/config.
 	$(MAKE) $(MAKE_PARALLEL) -C build/qemu/roms seavgabios-{cirrus,stdvga}
 	#$(MAKE) $(MAKE_PARALLEL) -C build/qemu/pc-bios/optionrom linuxboot.bin linuxboot_dma.bin
 	$(MAKE) $(MAKE_PARALLEL) -C build/qemu
+	strip --strip-unneeded $@
 
 LINUX_PATCHES := $(shell $Q -l linux)
 

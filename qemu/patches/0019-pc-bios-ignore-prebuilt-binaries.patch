@@ -1,26 +1,25 @@
-From 8b42253bc271875a797e36382388b1fdc74e7eb4 Mon Sep 17 00:00:00 2001
+From cbe124bd24f8709ba9807b85affe35b1e3d9f68a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
  <frederic.pierret@qubes-os.org>
 Date: Sun, 7 Nov 2021 19:33:05 +0100
-Subject: [PATCH] pc-bios: ignore prebuilt binaries
+Subject: [PATCH 19/21] pc-bios: ignore prebuilt binaries
 
 ---
- pc-bios/meson.build | 44 --------------------------------------------
- 1 file changed, 44 deletions(-)
+ pc-bios/meson.build | 46 ---------------------------------------------
+ 1 file changed, 46 deletions(-)
 
 diff --git a/pc-bios/meson.build b/pc-bios/meson.build
-index f2b32598af..dc9ce9a431 100644
+index a7224ef469..e88fd46d98 100644
 --- a/pc-bios/meson.build
 +++ b/pc-bios/meson.build
-@@ -23,64 +23,20 @@ if install_edk2_blobs
+@@ -24,64 +24,18 @@ if unpack_edk2_blobs
  endif
  
- blobs = files(
+ blobs = [
 -  'bios.bin',
 -  'bios-256k.bin',
 -  'bios-microvm.bin',
 -  'qboot.rom',
--  'sgabios.bin',
 -  'vgabios.bin',
 -  'vgabios-cirrus.bin',
 -  'vgabios-stdvga.bin',
@@ -55,6 +54,7 @@ index f2b32598af..dc9ce9a431 100644
 -  'petalogix-s3adsp1800.dtb',
 -  'petalogix-ml605.dtb',
 -  'multiboot.bin',
+-  'multiboot_dma.bin',
 -  'linuxboot.bin',
 -  'linuxboot_dma.bin',
 -  'kvmvapic.bin',
@@ -71,12 +71,12 @@ index f2b32598af..dc9ce9a431 100644
    'hppa-firmware.img',
 -  'opensbi-riscv32-generic-fw_dynamic.bin',
 -  'opensbi-riscv64-generic-fw_dynamic.bin',
-   'opensbi-riscv32-generic-fw_dynamic.elf',
-   'opensbi-riscv64-generic-fw_dynamic.elf',
 -  'npcm7xx_bootrom.bin',
- )
+-  'vof.bin',
+-  'vof-nvram.bin',
+ ]
  
  if get_option('install_blobs')
 -- 
-2.31.1
+2.41.0
 

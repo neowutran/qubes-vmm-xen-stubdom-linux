@@ -1,7 +1,7 @@
-From 8cfeed23fc6499bb7b669e62786b5adf2649a522 Mon Sep 17 00:00:00 2001
+From f550b1297cd474c3ea351e67961b6dbd543ecf63 Mon Sep 17 00:00:00 2001
 From: Grzegorz Uriasz <gorbak25@gmail.com>
 Date: Wed, 15 Apr 2020 23:27:09 +0200
-Subject: [PATCH] IGD fix undefined behaviour
+Subject: [PATCH 16/21] IGD fix undefined behaviour
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -70,5 +70,5 @@ index 03422a8a71..f71ef54b98 100644
      }
  
 -- 
-2.31.1
+2.41.0
 

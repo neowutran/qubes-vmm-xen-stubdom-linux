@@ -1,8 +1,8 @@
-From 0327a4b93312bc29131c5caf25bc0d1562a74859 Mon Sep 17 00:00:00 2001
+From 16d601707529d74c05271533213df21603fe3f0a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
  <frederic.pierret@qubes-os.org>
 Date: Mon, 1 Nov 2021 18:40:04 +0100
-Subject: [PATCH] Register ich6 ich9 soundhw
+Subject: [PATCH 12/21] Register ich6 ich9 soundhw
 
 Adapted from https://github.com/QubesOS/qubes-vmm-xen-stubdom-linux/blob/2a814bd1edaf549ef9252eb6747aa6137abf9831/qemu/patches/qemu-register-ich6-ich9-soundhw.patch
 
@@ -15,10 +15,10 @@ Contributors: fepitre
  2 files changed, 16 insertions(+), 1 deletion(-)
 
 diff --git a/hw/audio/intel-hda.c b/hw/audio/intel-hda.c
-index 4330213fff..4513ea9b22 100644
+index b9ed231fe8..d6277916dc 100644
 --- a/hw/audio/intel-hda.c
 +++ b/hw/audio/intel-hda.c
-@@ -1318,6 +1318,19 @@ static int intel_hda_and_codec_init(PCIBus *bus)
+@@ -1321,6 +1321,19 @@ static int intel_hda_and_codec_init(PCIBus *bus, const char *audiodev)
      return 0;
  }
  
@@ -38,7 +38,7 @@ index 4330213fff..4513ea9b22 100644
  static void intel_hda_register_types(void)
  {
      type_register_static(&hda_codec_bus_info);
-@@ -1326,6 +1339,8 @@ static void intel_hda_register_types(void)
+@@ -1329,6 +1342,8 @@ static void intel_hda_register_types(void)
      type_register_static(&intel_hda_info_ich9);
      type_register_static(&hda_codec_device_type_info);
      pci_register_soundhw("hda", "Intel HD Audio", intel_hda_and_codec_init);
@@ -48,18 +48,18 @@ index 4330213fff..4513ea9b22 100644
  
  type_init(intel_hda_register_types)
 diff --git a/hw/audio/soundhw.c b/hw/audio/soundhw.c
-index 173b674ff5..4327bea1c5 100644
+index 94d9463e42..1a939f2bb6 100644
 --- a/hw/audio/soundhw.c
 +++ b/hw/audio/soundhw.c
-@@ -42,7 +42,7 @@ struct soundhw {
-     } init;
+@@ -40,7 +40,7 @@ struct soundhw {
+     int (*init_pci) (PCIBus *bus, const char *audiodev);
  };
  
 -static struct soundhw soundhw[9];
 +static struct soundhw soundhw[11];
  static int soundhw_count;
  
- void isa_register_soundhw(const char *name, const char *descr,
+ void pci_register_soundhw(const char *name, const char *descr,
 -- 
-2.31.1
+2.41.0
 

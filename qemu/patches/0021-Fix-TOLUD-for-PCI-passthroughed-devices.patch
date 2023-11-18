@@ -1,17 +1,17 @@
-From ea9ab4a423dbff7d20b1fa510aac440391935474 Mon Sep 17 00:00:00 2001
+From 2d7c35a4d7af621d98bfc4e639aac1ad76f55f8d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Mateusz=20Pi=C3=B3rkowski?= <mati7337@protonmail.ch>
 Date: Sat, 26 Mar 2022 03:06:35 +0100
-Subject: [PATCH] Fix TOLUD for PCI passthroughed devices
+Subject: [PATCH 21/21] Fix TOLUD for PCI passthroughed devices
 
 ---
  hw/i386/xen/xen-hvm.c | 73 ++++++++++++++++++++++++++++++++++++++++++-
  1 file changed, 72 insertions(+), 1 deletion(-)
 
 diff --git a/hw/i386/xen/xen-hvm.c b/hw/i386/xen/xen-hvm.c
-index 9b432773f0..78c6bd758d 100644
+index f42621e674..2ed2feef11 100644
 --- a/hw/i386/xen/xen-hvm.c
 +++ b/hw/i386/xen/xen-hvm.c
-@@ -198,6 +198,65 @@ qemu_irq *xen_interrupt_controller_init(void)
+@@ -112,6 +112,65 @@ qemu_irq *xen_interrupt_controller_init(void)
  
  /* Memory Ops */
  
@@ -77,7 +77,7 @@ index 9b432773f0..78c6bd758d 100644
  static void xen_ram_init(PCMachineState *pcms,
                           ram_addr_t ram_size, MemoryRegion **ram_memory_p)
  {
-@@ -211,9 +270,21 @@ static void xen_ram_init(PCMachineState *pcms,
+@@ -125,9 +184,21 @@ static void xen_ram_init(PCMachineState *pcms,
  
      /* Handle the machine opt max-ram-below-4g.  It is basically doing
       * min(xen limit, user limit).
@@ -101,5 +101,5 @@ index 9b432773f0..78c6bd758d 100644
      if (HVM_BELOW_4G_RAM_END <= user_lowmem) {
          user_lowmem = HVM_BELOW_4G_RAM_END;
 -- 
-2.34.1
+2.41.0
 

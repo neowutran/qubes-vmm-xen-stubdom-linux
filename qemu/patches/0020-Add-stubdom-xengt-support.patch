@@ -1,7 +1,7 @@
-From 01818d9d2af100d56e2701690bbac4a87576f0e9 Mon Sep 17 00:00:00 2001
+From 588aefb144e345c559bd3f537d426f4a11b590cd Mon Sep 17 00:00:00 2001
 From: Ivan Kardykov <kardykov@tabit.pro>
 Date: Sun, 2 Jan 2022 23:36:21 +0300
-Subject: [PATCH] Add stubdom xengt support
+Subject: [PATCH 20/21] Add stubdom xengt support
 
 ---
  hw/pci/pci.c            | 4 ++++
@@ -11,10 +11,10 @@ Subject: [PATCH] Add stubdom xengt support
  4 files changed, 16 insertions(+), 2 deletions(-)
 
 diff --git a/hw/pci/pci.c b/hw/pci/pci.c
-index 23d2ae2ab..40838559a 100644
+index 881d774fb6..10ce61585d 100644
 --- a/hw/pci/pci.c
 +++ b/hw/pci/pci.c
-@@ -1062,6 +1062,10 @@ static PCIDevice *do_pci_register_device(PCIDevice *pci_dev,
+@@ -1163,6 +1163,10 @@ static PCIDevice *do_pci_register_device(PCIDevice *pci_dev,
      if (devfn < 0) {
          for(devfn = bus->devfn_min ; devfn < ARRAY_SIZE(bus->devices);
              devfn += PCI_FUNC_MAX) {
@@ -26,10 +26,10 @@ index 23d2ae2ab..40838559a 100644
                     !pci_bus_devfn_reserved(bus, devfn)) {
                  goto found;
 diff --git a/include/sysemu/sysemu.h b/include/sysemu/sysemu.h
-index 8fae66717..a6d228927 100644
+index 25be2a692e..31971e10a8 100644
 --- a/include/sysemu/sysemu.h
 +++ b/include/sysemu/sysemu.h
-@@ -28,7 +28,7 @@ extern int autostart;
+@@ -29,7 +29,7 @@ extern int autostart;
  
  typedef enum {
      VGA_NONE, VGA_STD, VGA_CIRRUS, VGA_VMWARE, VGA_XENFB, VGA_QXL,
@@ -39,10 +39,10 @@ index 8fae66717..a6d228927 100644
  } VGAInterfaceType;
  
 diff --git a/qemu-options.hx b/qemu-options.hx
-index 83aa59a92..07d2696e4 100644
+index b56f6b2fb2..26d60e1b85 100644
 --- a/qemu-options.hx
 +++ b/qemu-options.hx
-@@ -2131,7 +2131,7 @@ SRST
+@@ -2333,7 +2333,7 @@ SRST
  ERST
  
  DEF("vga", HAS_ARG, QEMU_OPTION_vga,
@@ -51,7 +51,7 @@ index 83aa59a92..07d2696e4 100644
      "                select video card type\n", QEMU_ARCH_ALL)
  SRST
  ``-vga type``
-@@ -2175,6 +2175,11 @@ SRST
+@@ -2377,6 +2377,11 @@ SRST
      ``virtio``
          Virtio VGA card.
  
@@ -64,13 +64,13 @@ index 83aa59a92..07d2696e4 100644
          Disable VGA card.
  ERST
 diff --git a/softmmu/vl.c b/softmmu/vl.c
-index 5ca11e746..116095d5d 100644
+index b0b96f67fa..e5a0ee8211 100644
 --- a/softmmu/vl.c
 +++ b/softmmu/vl.c
-@@ -906,6 +906,10 @@ static const VGAInterfaceInfo vga_interfaces[VGA_TYPE_MAX] = {
-         .opt_name = "xenfb",
+@@ -941,6 +941,10 @@ static const VGAInterfaceInfo vga_interfaces[VGA_TYPE_MAX] = {
          .name = "Xen paravirtualized framebuffer",
      },
+ #endif
 +    [VGA_VGT] = {
 +        .opt_name = "xengt",
 +        .name = "Intel GVT-g",
@@ -78,7 +78,7 @@ index 5ca11e746..116095d5d 100644
  };
  
  static bool vga_interface_available(VGAInterfaceType t)
-@@ -960,6 +964,7 @@ static void select_vgahw(const MachineClass *machine_class, const char *p)
+@@ -1007,6 +1011,7 @@ static void select_vgahw(const MachineClass *machine_class, const char *p)
                  exit(1);
              }
              vga_interface_type = t;
@@ -87,5 +87,5 @@ index 5ca11e746..116095d5d 100644
          }
      }
 -- 
-2.31.1
+2.41.0
 

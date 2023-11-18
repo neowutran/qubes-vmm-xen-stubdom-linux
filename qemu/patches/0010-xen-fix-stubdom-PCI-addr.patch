@@ -1,8 +1,8 @@
-From c12992d7667031e3d7fd5669ec25ed4b18f273a1 Mon Sep 17 00:00:00 2001
+From e4a3bb4db38e04c88b34fc5cb516af01248d25b3 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
  <frederic.pierret@qubes-os.org>
 Date: Mon, 1 Nov 2021 18:30:55 +0100
-Subject: [PATCH] xen: fix stubdom PCI addr
+Subject: [PATCH 10/21] xen: fix stubdom PCI addr
 
 Adapted from https://github.com/QubesOS/qubes-vmm-xen-stubdom-linux/blob/2a814bd1edaf549ef9252eb6747aa6137abf9831/qemu/patches/stubdom-pci-addr-fix.patch
 
@@ -15,7 +15,7 @@ Contributors: HW42, fepitre
  2 files changed, 82 insertions(+), 1 deletion(-)
 
 diff --git a/hw/xen/xen-host-pci-device.c b/hw/xen/xen-host-pci-device.c
-index 8c6e9a1716..2619cb1a09 100644
+index 8c6e9a1716..fec4863db8 100644
 --- a/hw/xen/xen-host-pci-device.c
 +++ b/hw/xen/xen-host-pci-device.c
 @@ -9,6 +9,7 @@
@@ -38,11 +38,11 @@ index 8c6e9a1716..2619cb1a09 100644
 +    char path[80];
 +    char *msg = NULL;
 +
-+    be_path = xs_read(xenstore, 0, "device/pci/0/backend", &len);
++    be_path = qemu_xen_xs_read(xenstore, 0, "device/pci/0/backend", &len);
 +    if (!be_path)
 +        goto err_out;
 +    snprintf(path, sizeof(path), "%s/num_devs", be_path);
-+    msg = xs_read(xenstore, 0, path, &len);
++    msg = qemu_xen_xs_read(xenstore, 0, path, &len);
 +    if (!msg)
 +        goto err_out;
 +
@@ -54,7 +54,7 @@ index 8c6e9a1716..2619cb1a09 100644
 +
 +    for (i = 0; i < num_devs; i++) {
 +        snprintf(path, sizeof(path), "%s/dev-%u", be_path, i);
-+        msg = xs_read(xenstore, 0, path, &len);
++        msg = qemu_xen_xs_read(xenstore, 0, path, &len);
 +        if (!msg) {
 +            error_setg(errp, "Failed to read %s\n", path);
 +            goto err_out;
@@ -70,7 +70,7 @@ index 8c6e9a1716..2619cb1a09 100644
 +                func!= d->func)
 +            continue;
 +        snprintf(path, sizeof(path), "%s/vdev-%u", be_path, i);
-+        msg = xs_read(xenstore, 0, path, &len);
++        msg = qemu_xen_xs_read(xenstore, 0, path, &len);
 +        if (!msg) {
 +            error_setg(errp, "Failed to read %s\n", path);
 +            goto out;
@@ -140,5 +140,5 @@ index 4d8d34ecb0..270dcb27f7 100644
      uint16_t device_id;
      uint32_t class_code;
 -- 
-2.31.1
+2.41.0
 
