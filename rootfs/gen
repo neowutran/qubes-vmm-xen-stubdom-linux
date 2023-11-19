@@ -71,7 +71,7 @@ if [[ -e "$PWD/build/qrexec/agent/qrexec-agent" ]]; then
     done
 fi
 
-make DESTDIR="$PWD/build/qemu/install" -C build/qemu install
+make DESTDIR="$PWD/build/qemu/install" -C build/qemu/build install
 inst build/qemu/install/usr/bin/qemu-system-i386 /bin/qemu
 inst build/qemu/build/pc-bios/optionrom/linuxboot_dma.bin /share/qemu/linuxboot_dma.bin
 cp build/qemu/pc-bios/vgabios-cirrus.bin "$rootfs_dir"/share/qemu/vgabios-cirrus.bin

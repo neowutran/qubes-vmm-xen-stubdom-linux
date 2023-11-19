@@ -11,7 +11,7 @@ ROOTFS_IMG=build/rootfs/stubdom-linux-rootfs
 # Stubdom disk content
 STUBDOM_DISK_FILE= \
   build/busybox/busybox \
-  build/qemu/i386-softmmu/qemu-system-i386 \
+  build/qemu/build/qemu-system-i386 \
   rootfs/init \
   rootfs/qemu-ifup \
   rootfs/qemu-ifdown \
@@ -206,8 +206,8 @@ build/qemu/.gui-agent-copied-in: build/qemu/.extracted $(QEMU_GUI_AGENT_FILES)
 
 export QEMU_PKG_CONFIG_FLAGS=--with-path=$(shell pwd)/build/padist/lib/pkgconfig
 
-build/qemu/config.status: build/qemu/.patched build/qemu/.gui-agent-copied-in $(FULL_BUILDDEPS)
-	cd build/qemu && ./configure \
+build/qemu/build/config.status: build/qemu/.patched build/qemu/.gui-agent-copied-in $(FULL_BUILDDEPS)
+	mkdir -p build/qemu/build && cd build/qemu/build && ../configure \
 		--without-default-features \
 		--target-list=i386-softmmu \
 		--enable-xen \
@@ -283,10 +283,10 @@ build/qemu/config.status: build/qemu/.patched build/qemu/.gui-agent-copied-in $(
 		--extra-ldflags="${QEMU_EXTRA_LDFLAGS}" \
 		--prefix=/usr
 
-build/qemu/i386-softmmu/qemu-system-i386: build/qemu/.patched build/qemu/config.status
+build/qemu/build/qemu-system-i386: build/qemu/.patched build/qemu/build/config.status
 	$(MAKE) $(MAKE_PARALLEL) -C build/qemu/roms seavgabios-{cirrus,stdvga}
 	#$(MAKE) $(MAKE_PARALLEL) -C build/qemu/pc-bios/optionrom linuxboot.bin linuxboot_dma.bin
-	$(MAKE) $(MAKE_PARALLEL) -C build/qemu
+	$(MAKE) $(MAKE_PARALLEL) -C build/qemu/build
 	strip --strip-unneeded $@
 
 LINUX_PATCHES := $(shell $Q -l linux)
