@@ -7,8 +7,67 @@ Subject: [PATCH 21/21] Fix TOLUD for PCI passthroughed devices
  hw/i386/xen/xen-hvm.c | 73 ++++++++++++++++++++++++++++++++++++++++++-
  1 file changed, 72 insertions(+), 1 deletion(-)
 
+diff --git a/hw/i386/pc_piix.c b/hw/i386/pc_piix.c
+index ac72e8f5b..afdfc2ad6 100644
+--- a/hw/i386/pc_piix.c
++++ b/hw/i386/pc_piix.c
+@@ -158,9 +158,12 @@ static void pc_init1(MachineState *machine,
+      *    qemu -M pc,max-ram-below-4g=2G -m 4G     -> 2048M low, 2048M high
+      *    qemu -M pc,max-ram-below-4g=4G -m 3968M  -> 3968M low (=4G-128M)
+      */
++    DPRINTF("NEOWUTRAN: PASSE B1\n");
+     if (xen_enabled()) {
++        DPRINTF("NEOWUTRAN: START XEN PART\n");
+         xen_hvm_init_pc(pcms, &ram_memory);
+     } else {
++        DPRINTF("NEOWUTRAN: !!!! NON XEN PART !!!! \n");
+         ram_memory = machine->ram;
+         if (!pcms->max_ram_below_4g) {
+             pcms->max_ram_below_4g = 0xe0000000; /* default: 3.5G */
+@@ -197,6 +200,7 @@ static void pc_init1(MachineState *machine,
+     }
+ 
+     if (pcmc->pci_enabled) {
++        DPRINTF("NEOWUTRAN: PCI_ENABLED\n");
+         Object *phb;
+ 
+         pci_memory = g_new(MemoryRegion, 1);
+@@ -220,6 +224,8 @@ static void pc_init1(MachineState *machine,
+         object_property_set_str(phb, I440FX_HOST_PROP_PCI_TYPE, pci_type,
+                                 &error_fatal);
+         sysbus_realize_and_unref(SYS_BUS_DEVICE(phb), &error_fatal);
++        DPRINTF("NEOWUTRAN: below_4g_mem_size: %l\n", x86ms->below_4g_mem_size);
++        DPRINTF("NEOWUTRAN: above_4g_mem_size: %l\n", x86ms->above_4g_mem_size);
+ 
+         pci_bus = PCI_BUS(qdev_get_child_bus(DEVICE(phb), "pci.0"));
+         pci_bus_map_irqs(pci_bus,
+@@ -230,6 +236,7 @@ static void pc_init1(MachineState *machine,
+         hole64_size = object_property_get_uint(phb,
+                                                PCI_HOST_PROP_PCI_HOLE64_SIZE,
+                                                &error_abort);
++        DPRINTF("NEOWUTRAN: hole64_size: %l\n", hole64_size);
+     }
+ 
+     pc_guest_info_init(pcms);
+@@ -245,13 +252,16 @@ static void pc_init1(MachineState *machine,
+ 
+     /* allocate ram and load rom/bios */
+     if (!xen_enabled()) {
++        DPRINTF("NEOWUTRAN: !!!!! 2 NOT XEN !!! \n");
+         pc_memory_init(pcms, system_memory, rom_memory, hole64_size);
+     } else {
++        DPRINTF("NEOWUTRAN: 2 XEN \n");
+         assert(machine->ram_size == x86ms->below_4g_mem_size +
+                                     x86ms->above_4g_mem_size);
+ 
+         pc_system_flash_cleanup_unused(pcms);
+         if (machine->kernel_filename != NULL) {
++        DPRINTF("NEOWUTRAN: C1 \n");
+             /* For xen HVM direct kernel boot, load linux here */
+             xen_load_linux(pcms);
+         }
 diff --git a/hw/i386/xen/xen-hvm.c b/hw/i386/xen/xen-hvm.c
-index f42621e674..2ed2feef11 100644
+index f42621e67..2b04c9774 100644
 --- a/hw/i386/xen/xen-hvm.c
 +++ b/hw/i386/xen/xen-hvm.c
 @@ -112,6 +112,65 @@ qemu_irq *xen_interrupt_controller_init(void)
@@ -77,7 +136,7 @@ index f42621e674..2ed2feef11 100644
  static void xen_ram_init(PCMachineState *pcms,
                           ram_addr_t ram_size, MemoryRegion **ram_memory_p)
  {
-@@ -125,9 +184,21 @@ static void xen_ram_init(PCMachineState *pcms,
+@@ -125,30 +184,58 @@ static void xen_ram_init(PCMachineState *pcms,
  
      /* Handle the machine opt max-ram-below-4g.  It is basically doing
       * min(xen limit, user limit).
@@ -89,17 +148,81 @@ index f42621e674..2ed2feef11 100644
 +     * required to lower max-ram-below-4g. Fixing that might solve the
 +     * problem in a more elegant way.
       */
++    DPRINTF("NEOWUTRAN: user_lowmem: %l\n", user_lowmem );
++    DPRINTF("NEOWUTRAN: HVM_BELOW_4G_RAM_END: %l\n", HVM_BELOW_4G_RAM_END);
++
      if (!user_lowmem) {
 -        user_lowmem = HVM_BELOW_4G_RAM_END; /* default */
++        DPRINTF("NEOWUTRAN: PASSE 1\n");
 +        uint64_t min_pci_addr = get_min_pci_addr();
++        DPRINTF("NEOWUTRAN: min_pci_addr: %l", min_pci_addr);
 +        if (min_pci_addr && min_pci_addr < HVM_BELOW_4G_RAM_END) {
++            DPRINTF("NEOWUTRAN: PASSE 2\n");
 +            user_lowmem = min_pci_addr;
 +        } else {
++            DPRINTF("NEOWUTRAN: PASSE 3\n");
 +            user_lowmem = HVM_BELOW_4G_RAM_END;
 +        }
      }
++
      if (HVM_BELOW_4G_RAM_END <= user_lowmem) {
++        DPRINTF("NEOWUTRAN: PASSE 4\n");
          user_lowmem = HVM_BELOW_4G_RAM_END;
+     }
+ 
++    DPRINTF("NEOWUTRAN: ram_size: %l", ram_size);
++    DPRINTF("NEOWUTRAN: user_lowmem: %l", user_lowmem);
+     if (ram_size >= user_lowmem) {
++        DPRINTF("NEOWUTRAN: PASSE 5\n");
+         x86ms->above_4g_mem_size = ram_size - user_lowmem;
+         x86ms->below_4g_mem_size = user_lowmem;
+     } else {
++        DPRINTF("NEOWUTRAN: PASSE 6\n");
+         x86ms->above_4g_mem_size = 0;
+         x86ms->below_4g_mem_size = ram_size;
+     }
+     if (!x86ms->above_4g_mem_size) {
++        DPRINTF("NEOWUTRAN: PASSE 7\n");
+         block_len = ram_size;
+     } else {
++        DPRINTF("NEOWUTRAN: PASSE 8\n");
+         /*
+          * Xen does not allocate the memory continuously, it keeps a
+          * hole of the size computed above or passed in.
+          */
+         block_len = (4 * GiB) + x86ms->above_4g_mem_size;
+     }
++    DPRINTF("NEOWUTRAN: block_len: %l", block_len);
+     memory_region_init_ram(&ram_memory, NULL, "xen.ram", block_len,
+                            &error_fatal);
+     *ram_memory_p = &ram_memory;
+@@ -679,12 +766,16 @@ void arch_xen_set_memory(XenIOState *state, MemoryRegionSection *section,
+ 
+     start_addr &= TARGET_PAGE_MASK;
+     size = TARGET_PAGE_ALIGN(size);
++    DPRINTF("NEOWUTRAN: SET MEMORY: start_addr: %l, size: %l\n", start_addr, size);
+ 
+     if (add) {
++        DPRINTF("NEOWUTRAN: PASSE A1\n");
+         if (!memory_region_is_rom(section->mr)) {
++        DPRINTF("NEOWUTRAN: PASSE A2\n");
+             xen_add_to_physmap(state, start_addr, size,
+                                section->mr, section->offset_within_region);
+         } else {
++        DPRINTF("NEOWUTRAN: PASSE A3\n");
+             mem_type = HVMMEM_ram_ro;
+             if (xen_set_mem_type(xen_domid, mem_type,
+                                  start_addr >> TARGET_PAGE_BITS,
+@@ -694,7 +785,9 @@ void arch_xen_set_memory(XenIOState *state, MemoryRegionSection *section,
+             }
+         }
+     } else {
++        DPRINTF("NEOWUTRAN: PASSE A4\n");
+         if (xen_remove_from_physmap(state, start_addr, size) < 0) {
++        DPRINTF("NEOWUTRAN: PASSE A5\n");
+             DPRINTF("physmapping does not exist at "HWADDR_FMT_plx"\n", start_addr);
+         }
+     }
+
 -- 
 2.41.0
-
