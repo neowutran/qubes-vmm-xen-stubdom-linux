@@ -8,10 +8,21 @@ Subject: [PATCH 21/21] Fix TOLUD for PCI passthroughed devices
  1 file changed, 72 insertions(+), 1 deletion(-)
 
 diff --git a/hw/i386/pc_piix.c b/hw/i386/pc_piix.c
-index ac72e8f5b..afdfc2ad6 100644
+index ac72e8f5b..0b9cb9fcd 100644
 --- a/hw/i386/pc_piix.c
 +++ b/hw/i386/pc_piix.c
-@@ -158,9 +158,12 @@ static void pc_init1(MachineState *machine,
+@@ -79,6 +79,10 @@ static const int ide_iobase2[MAX_IDE_BUS] = { 0x3f6, 0x376 };
+ static const int ide_irq[MAX_IDE_BUS] = { 14, 15 };
+ #endif
+ 
++#define DPRINTF(fmt, ...) do { \
++    fprintf(stderr, "xen_platform: " fmt, ## __VA_ARGS__); \
++} while (0)
++
+ /*
+  * Return the global irq number corresponding to a given device irq
+  * pin. We could also use the bus number to have a more precise mapping.
+@@ -158,9 +162,12 @@ static void pc_init1(MachineState *machine,
       *    qemu -M pc,max-ram-below-4g=2G -m 4G     -> 2048M low, 2048M high
       *    qemu -M pc,max-ram-below-4g=4G -m 3968M  -> 3968M low (=4G-128M)
       */
@@ -24,7 +35,7 @@ index ac72e8f5b..afdfc2ad6 100644
          ram_memory = machine->ram;
          if (!pcms->max_ram_below_4g) {
              pcms->max_ram_below_4g = 0xe0000000; /* default: 3.5G */
-@@ -197,6 +200,7 @@ static void pc_init1(MachineState *machine,
+@@ -197,6 +204,7 @@ static void pc_init1(MachineState *machine,
      }
  
      if (pcmc->pci_enabled) {
@@ -32,7 +43,7 @@ index ac72e8f5b..afdfc2ad6 100644
          Object *phb;
  
          pci_memory = g_new(MemoryRegion, 1);
-@@ -220,6 +224,8 @@ static void pc_init1(MachineState *machine,
+@@ -220,6 +228,8 @@ static void pc_init1(MachineState *machine,
          object_property_set_str(phb, I440FX_HOST_PROP_PCI_TYPE, pci_type,
                                  &error_fatal);
          sysbus_realize_and_unref(SYS_BUS_DEVICE(phb), &error_fatal);
@@ -41,7 +52,7 @@ index ac72e8f5b..afdfc2ad6 100644
  
          pci_bus = PCI_BUS(qdev_get_child_bus(DEVICE(phb), "pci.0"));
          pci_bus_map_irqs(pci_bus,
-@@ -230,6 +236,7 @@ static void pc_init1(MachineState *machine,
+@@ -230,6 +240,7 @@ static void pc_init1(MachineState *machine,
          hole64_size = object_property_get_uint(phb,
                                                 PCI_HOST_PROP_PCI_HOLE64_SIZE,
                                                 &error_abort);
@@ -49,7 +60,7 @@ index ac72e8f5b..afdfc2ad6 100644
      }
  
      pc_guest_info_init(pcms);
-@@ -245,13 +252,16 @@ static void pc_init1(MachineState *machine,
+@@ -245,13 +256,16 @@ static void pc_init1(MachineState *machine,
  
      /* allocate ram and load rom/bios */
      if (!xen_enabled()) {
@@ -223,6 +234,35 @@ index f42621e67..2b04c9774 100644
              DPRINTF("physmapping does not exist at "HWADDR_FMT_plx"\n", start_addr);
          }
      }
+diff --git a/hw/i386/xen/xen_platform.c b/hw/i386/xen/xen_platform.c
+index 17457ff3d..2d3d119cf 100644
+--- a/hw/i386/xen/xen_platform.c
++++ b/hw/i386/xen/xen_platform.c
+@@ -50,7 +50,9 @@
+     fprintf(stderr, "xen_platform: " fmt, ## __VA_ARGS__); \
+ } while (0)
+ #else
+-#define DPRINTF(fmt, ...) do { } while (0)
++#define DPRINTF(fmt, ...) do { \
++    fprintf(stderr, "xen_platform: " fmt, ## __VA_ARGS__); \
++} while (0)
+ #endif
+ 
+ #define PFFLAG_ROM_LOCK 1 /* Sets whether ROM memory area is RW or RO */
+diff --git a/include/hw/xen/xen-hvm-common.h b/include/hw/xen/xen-hvm-common.h
+index 4e9904f1a..2293a9ae0 100644
+--- a/include/hw/xen/xen-hvm-common.h
++++ b/include/hw/xen/xen-hvm-common.h
+@@ -27,7 +27,8 @@ extern DeviceListener xen_device_listener;
+     do { fprintf(stderr, "xen: " fmt, ## __VA_ARGS__); } while (0)
+ #else
+ #define DPRINTF(fmt, ...) \
+-    do { } while (0)
++    do { fprintf(stderr, "xen: " fmt, ## __VA_ARGS__); } while (0)
++
+ #endif
+ 
+ static inline uint32_t xen_vcpu_eport(shared_iopage_t *shared_page, int i)
 
 -- 
 2.41.0
