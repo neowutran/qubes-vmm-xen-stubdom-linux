@@ -8,7 +8,7 @@ Subject: [PATCH 21/21] Fix TOLUD for PCI passthroughed devices
  1 file changed, 72 insertions(+), 1 deletion(-)
 
 diff --git a/hw/i386/pc_piix.c b/hw/i386/pc_piix.c
-index ac72e8f5b..0b9cb9fcd 100644
+index ac72e8f5b..6c6a2c8e2 100644
 --- a/hw/i386/pc_piix.c
 +++ b/hw/i386/pc_piix.c
 @@ -79,6 +79,10 @@ static const int ide_iobase2[MAX_IDE_BUS] = { 0x3f6, 0x376 };
@@ -47,8 +47,8 @@ index ac72e8f5b..0b9cb9fcd 100644
          object_property_set_str(phb, I440FX_HOST_PROP_PCI_TYPE, pci_type,
                                  &error_fatal);
          sysbus_realize_and_unref(SYS_BUS_DEVICE(phb), &error_fatal);
-+        DPRINTF("NEOWUTRAN: below_4g_mem_size: %l\n", x86ms->below_4g_mem_size);
-+        DPRINTF("NEOWUTRAN: above_4g_mem_size: %l\n", x86ms->above_4g_mem_size);
++        DPRINTF("NEOWUTRAN: below_4g_mem_size: %llx\n", x86ms->below_4g_mem_size);
++        DPRINTF("NEOWUTRAN: above_4g_mem_size: %llx\n", x86ms->above_4g_mem_size);
  
          pci_bus = PCI_BUS(qdev_get_child_bus(DEVICE(phb), "pci.0"));
          pci_bus_map_irqs(pci_bus,
@@ -56,7 +56,7 @@ index ac72e8f5b..0b9cb9fcd 100644
          hole64_size = object_property_get_uint(phb,
                                                 PCI_HOST_PROP_PCI_HOLE64_SIZE,
                                                 &error_abort);
-+        DPRINTF("NEOWUTRAN: hole64_size: %l\n", hole64_size);
++        DPRINTF("NEOWUTRAN: hole64_size: %llx\n", hole64_size);
      }
  
      pc_guest_info_init(pcms);
@@ -78,7 +78,7 @@ index ac72e8f5b..0b9cb9fcd 100644
              xen_load_linux(pcms);
          }
 diff --git a/hw/i386/xen/xen-hvm.c b/hw/i386/xen/xen-hvm.c
-index f42621e67..2b04c9774 100644
+index f42621e67..0f1c673c9 100644
 --- a/hw/i386/xen/xen-hvm.c
 +++ b/hw/i386/xen/xen-hvm.c
 @@ -112,6 +112,65 @@ qemu_irq *xen_interrupt_controller_init(void)
@@ -159,14 +159,14 @@ index f42621e67..2b04c9774 100644
 +     * required to lower max-ram-below-4g. Fixing that might solve the
 +     * problem in a more elegant way.
       */
-+    DPRINTF("NEOWUTRAN: user_lowmem: %l\n", user_lowmem );
-+    DPRINTF("NEOWUTRAN: HVM_BELOW_4G_RAM_END: %l\n", HVM_BELOW_4G_RAM_END);
++    DPRINTF("NEOWUTRAN: user_lowmem: %llx\n", user_lowmem );
++    DPRINTF("NEOWUTRAN: HVM_BELOW_4G_RAM_END: %llx\n", HVM_BELOW_4G_RAM_END);
 +
      if (!user_lowmem) {
 -        user_lowmem = HVM_BELOW_4G_RAM_END; /* default */
 +        DPRINTF("NEOWUTRAN: PASSE 1\n");
 +        uint64_t min_pci_addr = get_min_pci_addr();
-+        DPRINTF("NEOWUTRAN: min_pci_addr: %l", min_pci_addr);
++        DPRINTF("NEOWUTRAN: min_pci_addr: %llx", min_pci_addr);
 +        if (min_pci_addr && min_pci_addr < HVM_BELOW_4G_RAM_END) {
 +            DPRINTF("NEOWUTRAN: PASSE 2\n");
 +            user_lowmem = min_pci_addr;
@@ -181,8 +181,8 @@ index f42621e67..2b04c9774 100644
          user_lowmem = HVM_BELOW_4G_RAM_END;
      }
  
-+    DPRINTF("NEOWUTRAN: ram_size: %l", ram_size);
-+    DPRINTF("NEOWUTRAN: user_lowmem: %l", user_lowmem);
++    DPRINTF("NEOWUTRAN: ram_size: %llx", ram_size);
++    DPRINTF("NEOWUTRAN: user_lowmem: %llx", user_lowmem);
      if (ram_size >= user_lowmem) {
 +        DPRINTF("NEOWUTRAN: PASSE 5\n");
          x86ms->above_4g_mem_size = ram_size - user_lowmem;
@@ -203,7 +203,7 @@ index f42621e67..2b04c9774 100644
           */
          block_len = (4 * GiB) + x86ms->above_4g_mem_size;
      }
-+    DPRINTF("NEOWUTRAN: block_len: %l", block_len);
++    DPRINTF("NEOWUTRAN: block_len: %llx", block_len);
      memory_region_init_ram(&ram_memory, NULL, "xen.ram", block_len,
                             &error_fatal);
      *ram_memory_p = &ram_memory;
@@ -211,7 +211,7 @@ index f42621e67..2b04c9774 100644
  
      start_addr &= TARGET_PAGE_MASK;
      size = TARGET_PAGE_ALIGN(size);
-+    DPRINTF("NEOWUTRAN: SET MEMORY: start_addr: %l, size: %l\n", start_addr, size);
++    DPRINTF("NEOWUTRAN: SET MEMORY: start_addr: %llx, size: %llx\n", start_addr, size);
  
      if (add) {
 +        DPRINTF("NEOWUTRAN: PASSE A1\n");
