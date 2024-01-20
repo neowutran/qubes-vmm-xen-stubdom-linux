@@ -3,7 +3,9 @@
 0003-xen-hvm-handle-CONFIG_STUBDOM.patch
 0004-QubesGUI-display-options.patch
 0005-hw-xen-xen_pt-Save-back-data-only-for-declared-regis.patch
+0008-xen-round-pci-region-sizes.patch
 0009-Disable-NIC-option-ROM.patch
+0010-xen-fix-stubdom-PCI-addr.patch
 0011-Additional-seccomp-filters.patch
 0012-Register-ich6-ich9-soundhw.patch
 0013-pc_piix-suppress-vmdesc.patch
