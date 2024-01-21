@@ -1,34 +1,36 @@
+diff --git a/hw/i386/xen/xen-hvm.c b/hw/i386/xen/xen-hvm.c
+index f42621e67..5cab10975 100644
 --- a/hw/i386/xen/xen-hvm.c
 +++ b/hw/i386/xen/xen-hvm.c
-@@ -1405,6 +1405,10 @@ void xen_hvm_init(PCMachineState *pcms,
-     state->wakeup.notify = xen_wakeup_notifier;
-     qemu_register_wakeup_notifier(&state->wakeup);
+@@ -593,6 +593,10 @@ void xen_hvm_init_pc(PCMachineState *pcms, MemoryRegion **ram_memory)
+     wakeup.notify = xen_wakeup_notifier;
+     qemu_register_wakeup_notifier(&wakeup);
  
 +    if (xen_stubdom_enable()) {
 +        xc_set_hvm_param(xen_xc, xen_domid, HVM_PARAM_DM_DOMAIN, DOMID_SELF);
 +    }
 +
-     rc = xen_map_ioreq_server(state);
-     if (rc < 0) {
-         goto err;
-@@ -1479,12 +1479,20 @@ void xen_hvm_init(PCMachineState *pcms,
-     QLIST_INIT(&state->dev_list);
-     device_listener_register(&state->device_listener);
- 
-+#ifndef CONFIG_STUBDOM
-     /* Initialize backend core & drivers */
-     if (xen_be_init() != 0) {
-         error_report("xen backend core setup failed");
-         goto err;
+     rc = xen_get_vmport_regs_pfn(xen_xc, xen_domid, &ioreq_pfn);
+     if (!rc) {
+         DPRINTF("shared vmport page at pfn %lx\n", ioreq_pfn);
+diff --git a/hw/xen/xen-hvm-common.c b/hw/xen/xen-hvm-common.c
+index 565dc39c8..abc35e745 100644
+--- a/hw/xen/xen-hvm-common.c
++++ b/hw/xen/xen-hvm-common.c
+@@ -868,8 +868,15 @@ void xen_register_ioreq(XenIOState *state, unsigned int max_cpus,
      }
-     xen_be_register_common();
+ 
+     xen_bus_init();
+-
++#ifndef CONFIG_STUBDOM
+     xen_be_init();
 +#else
-+    xenstore = xs_daemon_open();
++    xenstore = qemu_xen_xs_open();
 +    if (!xenstore) {
 +        error_report("can't connect to xenstored");
 +        goto err;
 +    }
 +#endif
  
-     QLIST_INIT(&xen_physmap);
-     xen_read_physmap(state);
+     return;
+ 
