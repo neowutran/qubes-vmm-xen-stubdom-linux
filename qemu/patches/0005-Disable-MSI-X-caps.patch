@@ -10,11 +10,8 @@ Author: HW42
 
 Contributors: fepitre
 ---
- hw/xen/xen_pt_config_init.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
 diff --git a/hw/xen/xen_pt_config_init.c b/hw/xen/xen_pt_config_init.c
-index c5c4e943a8..d4b6f074a6 100644
+index 2b8680b11..1927fd7cd 100644
 --- a/hw/xen/xen_pt_config_init.c
 +++ b/hw/xen/xen_pt_config_init.c
 @@ -1454,6 +1454,7 @@ static XenPTRegInfo xen_pt_emu_reg_msi[] = {
