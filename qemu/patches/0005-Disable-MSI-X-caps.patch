@@ -1,0 +1,70 @@
+From 5b43341ac777224cce21006bd4eced03f5a6c330 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?=
+ <frederic.pierret@qubes-os.org>
+Date: Mon, 1 Nov 2021 18:18:50 +0100
+Subject: [PATCH] Disable MSI-X caps
+
+Adapted from https://github.com/QubesOS/qubes-vmm-xen-stubdom-linux/blob/2a814bd1edaf549ef9252eb6747aa6137abf9831/qemu/patches/disable-msix-caps.patch
+
+Author: HW42
+
+Contributors: fepitre
+---
+ hw/xen/xen_pt_config_init.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/hw/xen/xen_pt_config_init.c b/hw/xen/xen_pt_config_init.c
+index c5c4e943a8..d4b6f074a6 100644
+--- a/hw/xen/xen_pt_config_init.c
++++ b/hw/xen/xen_pt_config_init.c
+@@ -1454,6 +1454,7 @@ static XenPTRegInfo xen_pt_emu_reg_msi[] = {
+ };
+ 
+ 
++#ifndef CONFIG_STUBDOM
+ /**************************************
+  * MSI-X Capability
+  */
+@@ -1548,6 +1549,7 @@ static XenPTRegInfo xen_pt_emu_reg_msix[] = {
+         .size = 0,
+     },
+ };
++#endif
+ 
+ static XenPTRegInfo xen_pt_emu_reg_igd_opregion[] = {
+     /* Intel IGFX OpRegion reg */
+@@ -1684,6 +1686,7 @@ static int xen_pt_msi_size_init(XenPCIPassthroughState *s,
+     *size = msi_size;
+     return 0;
+ }
++#ifndef CONFIG_STUBDOM
+ /* get MSI-X Capability Structure register group size */
+ static int xen_pt_msix_size_init(XenPCIPassthroughState *s,
+                                  const XenPTRegGroupInfo *grp_reg,
+@@ -1701,6 +1704,7 @@ static int xen_pt_msix_size_init(XenPCIPassthroughState *s,
+     *size = grp_reg->grp_size;
+     return 0;
+ }
++#endif
+ 
+ 
+ static const XenPTRegGroupInfo xen_pt_emu_reg_grps[] = {
+@@ -1794,6 +1798,7 @@ static const XenPTRegGroupInfo xen_pt_emu_reg_grps[] = {
+         .size_init   = xen_pt_pcie_size_init,
+         .emu_regs = xen_pt_emu_reg_pcie,
+     },
++#ifndef CONFIG_STUBDOM
+     /* MSI-X Capability Structure reg group */
+     {
+         .grp_id      = PCI_CAP_ID_MSIX,
+@@ -1802,6 +1807,7 @@ static const XenPTRegGroupInfo xen_pt_emu_reg_grps[] = {
+         .size_init   = xen_pt_msix_size_init,
+         .emu_regs = xen_pt_emu_reg_msix,
+     },
++#endif
+     /* Intel IGD Opregion group */
+     {
+         .grp_id      = XEN_PCI_INTEL_OPREGION,
+-- 
+2.31.1
+
