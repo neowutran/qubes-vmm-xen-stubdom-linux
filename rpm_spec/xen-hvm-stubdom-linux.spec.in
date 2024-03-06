@@ -1,3 +1,5 @@
+%global _default_patch_fuzz 2
+
 %define QEMU_VERSION 8.1.2
 %define LINUX_VERSION 5.10.200
 %define BUSYBOX_VERSION 1.31.1
