@@ -279,7 +279,7 @@ build/qemu/build/config.status: build/qemu/.patched build/qemu/.gui-agent-copied
 		--enable-rng-none \
 		${QEMU_OPTIONS} \
 		--cxx=/non-existent \
-		--extra-cflags="-DXEN_PT_LOGGING_ENABLED=1 ${QEMU_EXTRA_CFLAGS}" \
+		--extra-cflags="-DXEN_PT_LOGGING_ENABLED=1 -DXEN_PT_DEBUG_PCI_CONFIG_ACCESS=1 ${QEMU_EXTRA_CFLAGS}" \
 		--extra-ldflags="${QEMU_EXTRA_LDFLAGS}" \
 		--prefix=/usr
 
