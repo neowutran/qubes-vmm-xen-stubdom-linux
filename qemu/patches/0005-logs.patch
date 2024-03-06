@@ -1,0 +1,20 @@
+diff --git a/hw/xen/xen_pt.c b/hw/xen/xen_pt.c
+index 36e6f93c3..5691a3246 100644
+--- a/hw/xen/xen_pt.c
++++ b/hw/xen/xen_pt.c
+@@ -256,6 +256,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+     XenPTRegInfo *reg = NULL;
+     bool wp_flag = false;
+ 
++    xen_pt_log(d, "NEOWUTRAN QEMU 1: %x ; %x", addr, *(uint32_t*)(d->config + addr));
+     if (xen_pt_pci_config_access_check(d, addr, len)) {
+         return;
+     }
+@@ -392,6 +393,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+             find_addr++;
+         }
+     }
++    xen_pt_log(d, "NEOWUTRAN QEMU 2: %x ; %x", addr, *(uint32_t*)(d->config + addr));
+ 
+     /* need to shift back before passing them to xen_host_pci_set_block. */
+     val >>= (addr & 3) << 3;
