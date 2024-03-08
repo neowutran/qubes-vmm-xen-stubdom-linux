@@ -1,42 +1,17 @@
-From d9bcff1339f75648f8f9d24a0912dc7faaeeb5b5 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Marek=20Marczykowski-G=C3=B3recki?=
- <marmarek@invisiblethingslab.com>
-Date: Mon, 14 Nov 2022 13:40:02 +0100
-Subject: [PATCH 05/21] hw/xen/xen_pt: Save back data only for declared
- registers
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-Call pci_default_write_config() in xen_pt_pci_write_config() only for
-registers that have matching XenPTRegInfo structure, and do that only after
-resolving any custom handlers. This is important for two reasons:
-1. XenPTRegInfo has ro_mask which needs to be enforced - Xen-specific
-   hooks do that on their own (especially xen_pt_*_reg_write()).
-2. Not setting value early allows the hooks to see the old value too.
-
-If it would be only about the first point, setting PCIDevice.wmask would
-probably be sufficient, but given the second point, restructure those
-writes.
-
-Signed-off-by: Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>
----
- hw/xen/xen_pt.c | 22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
-
 diff --git a/hw/xen/xen_pt.c b/hw/xen/xen_pt.c
-index 36e6f93c37..3380f542d5 100644
+index 36e6f93c3..cf1d10663 100644
 --- a/hw/xen/xen_pt.c
 +++ b/hw/xen/xen_pt.c
-@@ -255,6 +255,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -255,6 +255,8 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
      uint32_t find_addr = addr;
      XenPTRegInfo *reg = NULL;
      bool wp_flag = false;
 +    uint32_t emul_mask = 0, write_val;
++    uint32_t neowutran_val = val;
  
      if (xen_pt_pci_config_access_check(d, addr, len)) {
          return;
-@@ -310,7 +311,6 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -310,7 +312,6 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
      }
  
      memory_region_transaction_begin();
@@ -44,7 +19,7 @@ index 36e6f93c37..3380f542d5 100644
  
      /* adjust the read and write value to appropriate CFC-CFF window */
      read_val <<= (addr & 3) << 3;
-@@ -370,6 +370,8 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -370,6 +371,8 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
                  return;
              }
  
@@ -53,12 +28,12 @@ index 36e6f93c37..3380f542d5 100644
              /* calculate next address to find */
              emul_len -= reg->size;
              if (emul_len > 0) {
-@@ -396,6 +398,24 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -396,6 +399,24 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
      /* need to shift back before passing them to xen_host_pci_set_block. */
      val >>= (addr & 3) << 3;
  
 +    /* store emulated registers after calling their handlers */
-+    write_val = val;
++    write_val = neowutran_val;
 +    for (index = 0; index < len; index += emul_len) {
 +        emul_len = 0;
 +        while (emul_mask & 0xff) {
@@ -78,6 +53,3 @@ index 36e6f93c37..3380f542d5 100644
      memory_region_transaction_commit();
  
  out:
--- 
-2.41.0
-
