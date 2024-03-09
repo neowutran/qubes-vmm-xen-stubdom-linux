@@ -1,5 +1,5 @@
 diff --git a/hw/xen/xen_pt.c b/hw/xen/xen_pt.c
-index 36e6f93c3..51c006734 100644
+index 36e6f93c3..d030049eb 100644
 --- a/hw/xen/xen_pt.c
 +++ b/hw/xen/xen_pt.c
 @@ -255,6 +255,8 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
@@ -21,40 +21,58 @@ index 36e6f93c3..51c006734 100644
  
      /* adjust the read and write value to appropriate CFC-CFF window */
      read_val <<= (addr & 3) << 3;
-@@ -342,6 +345,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -329,19 +332,22 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+             uint32_t wp_mask = reg->emu_mask | reg->ro_mask;
+ 
+             valid_mask <<= (find_addr - real_offset) << 3;
++            xen_pt_log(d, "NEOWUTRAN QEMU mask1: %x ; %x ; %x ; %x ; %x  \n", reg->emu_mask, reg->ro_mask, wp_mask, valid_mask,reg->offset);
+             ptr_val = (uint8_t *)&val + (real_offset & 3);
+             if (!s->permissive) {
+                 wp_mask |= reg->res_mask;
+             }
++            xen_pt_log(d, "NEOWUTRAN QEMU mask2: %x ; %x ; %x ; %x ; %x  \n", reg->emu_mask, reg->ro_mask, wp_mask, valid_mask,reg->offset);
+             if (wp_mask == (0xFFFFFFFF >> ((4 - reg->size) << 3))) {
+                 wb_mask &= ~((wp_mask >> ((find_addr - real_offset) << 3))
+                              << ((len - emul_len) << 3));
+             }
+-
++            xen_pt_log(d, "NEOWUTRAN QEMU mask3: %x ; %x ; %x ; %x ; %x  \n", reg->emu_mask, reg->ro_mask, wp_mask, valid_mask,reg->offset);
+             /* do emulation based on register size */
              switch (reg->size) {
              case 1:
                  if (reg->u.b.write) {
-+                    xen_pt_log(d, "NEOWUTRAN QEMU byte write: %x ; %x \n", read_val >> ((real_offset & 3) << 3), valid_mask);
++                    xen_pt_log(d, "NEOWUTRAN QEMU byte write: %x ; %x ; %x  \n", read_val >> ((real_offset & 3) << 3), valid_mask, reg->offset);
                      rc = reg->u.b.write(s, reg_entry, ptr_val,
                                          read_val >> ((real_offset & 3) << 3),
                                          valid_mask);
-@@ -349,6 +353,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -349,6 +355,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
                  break;
              case 2:
                  if (reg->u.w.write) {
-+                    xen_pt_log(d, "NEOWUTRAN QEMU word write: %x ; %x \n", read_val >> ((real_offset & 3) << 3), valid_mask);
++                    xen_pt_log(d, "NEOWUTRAN QEMU word write: %x ; %x ; %x \n", read_val >> ((real_offset & 3) << 3), valid_mask, reg->offset);
                      rc = reg->u.w.write(s, reg_entry, (uint16_t *)ptr_val,
                                          (read_val >> ((real_offset & 3) << 3)),
                                          valid_mask);
-@@ -356,6 +361,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -356,6 +363,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
                  break;
              case 4:
                  if (reg->u.dw.write) {
-+                    xen_pt_log(d, "NEOWUTRAN QEMU word write: %x ; %x \n", read_val >> ((real_offset & 3) << 3), valid_mask);
++                    xen_pt_log(d, "NEOWUTRAN QEMU dword write: %x ; %x ; %x \n", read_val >> ((real_offset & 3) << 3), valid_mask, reg->offset);
                      rc = reg->u.dw.write(s, reg_entry, (uint32_t *)ptr_val,
                                           (read_val >> ((real_offset & 3) << 3)),
                                           valid_mask);
-@@ -370,6 +376,8 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -369,6 +377,10 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+                                          __func__, rc);
                  return;
              }
- 
++            xen_pt_log(d, "NEOWUTRAN QEMU emul mask1: %x ; %x ; %x ; %x \n", emul_mask, reg->size, find_addr, reg->offset);
 +            emul_mask |= ( (1 << (reg->size * 8) ) - 1 ) << ((find_addr & 3) * 8);
++            xen_pt_log(d, "NEOWUTRAN QEMU emul mask2: %x ; %x ; %x ; %x \n", emul_mask, reg->size, find_addr, reg->offset);
 +
+ 
              /* calculate next address to find */
              emul_len -= reg->size;
-             if (emul_len > 0) {
-@@ -396,6 +404,26 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -396,6 +408,26 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
      /* need to shift back before passing them to xen_host_pci_set_block. */
      val >>= (addr & 3) << 3;
  
