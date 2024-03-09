@@ -1,5 +1,5 @@
 diff --git a/hw/xen/xen_pt.c b/hw/xen/xen_pt.c
-index 36e6f93c3..286d01279 100644
+index 36e6f93c3..790b5f2d1 100644
 --- a/hw/xen/xen_pt.c
 +++ b/hw/xen/xen_pt.c
 @@ -255,6 +255,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
@@ -36,7 +36,7 @@ index 36e6f93c3..286d01279 100644
              }
 +            xen_pt_log(d, "NEOWUTRAN QEMU mask3: %x ; %x ; %x ; %x ; %x ; RO: %x \n", reg->emu_mask, reg->ro_mask, wp_mask, valid_mask,reg->offset, reg->ro_mask);
 +            if ( write_val == write_val & reg->ro_mask ) {
-+               pci_default_write_config(d, addr + reg->offset, write_val, reg->size);
++               pci_default_write_config(d, addr + (reg->offset - addr), write_val, reg->size);
 +            }
  
              /* do emulation based on register size */
