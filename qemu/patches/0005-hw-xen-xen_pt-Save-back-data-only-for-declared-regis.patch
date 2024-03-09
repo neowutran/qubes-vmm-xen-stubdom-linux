@@ -1,5 +1,5 @@
 diff --git a/hw/xen/xen_pt.c b/hw/xen/xen_pt.c
-index 36e6f93c3..d030049eb 100644
+index 36e6f93c3..fcba1aa69 100644
 --- a/hw/xen/xen_pt.c
 +++ b/hw/xen/xen_pt.c
 @@ -255,6 +255,8 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
@@ -72,7 +72,7 @@ index 36e6f93c3..d030049eb 100644
  
              /* calculate next address to find */
              emul_len -= reg->size;
-@@ -396,6 +408,26 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -396,6 +408,30 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
      /* need to shift back before passing them to xen_host_pci_set_block. */
      val >>= (addr & 3) << 3;
  
@@ -81,17 +81,21 @@ index 36e6f93c3..d030049eb 100644
 +    for (index = 0; index < len; index += emul_len) {
 +        emul_len = 0;
 +        while (emul_mask & 0xff) {
++            xen_pt_log(d, "NEOWUTRAN QEMU emul mask A42: %x ; %x ; \n", emul_len, emul_mask);
 +            emul_len++;
 +            emul_mask >>= 8;
++            xen_pt_log(d, "NEOWUTRAN QEMU emul mask B42: %x ; %x ; \n", emul_len, emul_mask);
 +        }
 +        if (emul_len) {
 +            uint32_t mask = ((1 << (emul_len * 8)) - 1);
-+            xen_pt_log(d, "NEOWUTRAN QEMU ACTUAl WRITE: %x ; %x ; val: %x ; mask : %x ; len: %x; index: %x \n", addr, *(uint32_t*)(d->config + addr), write_val & mask, mask, emul_len, index);
-+
++            xen_pt_log(d, "NEOWUTRAN QEMU ACTUAl WRITE: %x ; %x ; val: %x ; mask : %x ; original val: %x ; len: %x; index: %x \n", addr, *(uint32_t*)(d->config + addr), write_val & mask, mask, write_val, emul_len, index);
 +            pci_default_write_config(d, addr + index, write_val & mask, emul_len);
 +        } else {
++            xen_pt_log(d, "NEOWUTRAN QEMU emul mask C42: %x ; %x ; \n", emul_len, emul_mask);
 +            emul_mask >>= 8;
 +            emul_len = 1;
++            xen_pt_log(d, "NEOWUTRAN QEMU emul mask D42: %x ; %x ; \n", emul_len, emul_mask);
++
 +        }
 +        write_val >>= emul_len * 8;
 +    }
