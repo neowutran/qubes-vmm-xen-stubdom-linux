@@ -1,5 +1,5 @@
 diff --git a/hw/xen/xen_pt.c b/hw/xen/xen_pt.c
-index 36e6f93c3..7e55e1c1d 100644
+index 36e6f93c3..56cfd4db5 100644
 --- a/hw/xen/xen_pt.c
 +++ b/hw/xen/xen_pt.c
 @@ -310,7 +310,8 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
@@ -88,7 +88,7 @@ index 36e6f93c3..7e55e1c1d 100644
 +                 }*/
 +
 +                 // from marmarek patch "2. Not setting value early allows the hooks to see the old value too.", i understand that the pci_default_write_config should be called after the calls to "reg->u.x.write(" 
-+                 send_to_hardware_value = write_value | ro_value;
++                 uint32_t send_to_hardware_value = write_value | ro_value;
 +                 xen_pt_log(d, "NEOWUTRAN QEMU ACTUAL WRITE %x %x %x \n", addr + (reg->offset - addr), send_to_hardware_value, reg->size);
 +                 pci_default_write_config(d, addr + (reg->offset - addr), send_to_hardware_value, reg->size);
 +
