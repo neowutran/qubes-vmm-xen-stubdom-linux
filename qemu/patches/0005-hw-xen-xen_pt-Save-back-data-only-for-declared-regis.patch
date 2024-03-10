@@ -1,16 +1,17 @@
 diff --git a/hw/xen/xen_pt.c b/hw/xen/xen_pt.c
-index 36e6f93c3..f0695b535 100644
+index 36e6f93c3..304440705 100644
 --- a/hw/xen/xen_pt.c
 +++ b/hw/xen/xen_pt.c
-@@ -255,6 +255,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -255,6 +255,8 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
      uint32_t find_addr = addr;
      XenPTRegInfo *reg = NULL;
      bool wp_flag = false;
 +    uint32_t send_to_hardware_value = 0;
++    uint32_t origin_val = val;
  
      if (xen_pt_pci_config_access_check(d, addr, len)) {
          return;
-@@ -310,7 +311,8 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -310,7 +312,8 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
      }
  
      memory_region_transaction_begin();
@@ -20,7 +21,7 @@ index 36e6f93c3..f0695b535 100644
  
      /* adjust the read and write value to appropriate CFC-CFF window */
      read_val <<= (addr & 3) << 3;
-@@ -329,19 +331,63 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -329,19 +332,63 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
              uint32_t wp_mask = reg->emu_mask | reg->ro_mask;
  
              valid_mask <<= (find_addr - real_offset) << 3;
@@ -53,18 +54,18 @@ index 36e6f93c3..f0695b535 100644
 +                   ro_value               = (*(uint8_t*)(d->config + addr + (reg->offset - addr)) & ~writable_mask);
 +
 +                   // Get the value that the guest wanted to write on the register, and apply the RO mask to only keep the writable bits
-+                   write_value            = (uint8_t)(read_val >> ((real_offset & 3) << 3) & writable_mask);
++                   write_value            = (uint8_t)((origin_val >> (reg->offset - addr)) & writable_mask);
 +
 +                   // from marmarek patch "2. Not setting value early allows the hooks to see the old value too.", i understand it is better if pci_default_write_config is be called after the calls to "reg->u.x.write("
 +                   send_to_hardware_value = (uint8_t) (write_value | ro_value);
 +		}else if (reg->size == 2){
 +                   ro_value               = (*(uint16_t*)(d->config + addr + (reg->offset - addr)) & ~writable_mask);
-+                   write_value            = (uint16_t) (read_val >> ((real_offset & 3) << 3) & writable_mask);
++                   write_value            = (uint16_t) ((origin_val >> (reg->offset - addr)) & writable_mask);
 +                   send_to_hardware_value = (uint16_t) (write_value | ro_value);
 +
 +  		}else{
 +                   ro_value               = (*(uint32_t*)(d->config + addr + (reg->offset - addr)) & ~writable_mask);
-+                   write_value            = (uint32_t)(read_val >> ((real_offset & 3) << 3) & writable_mask);
++                   write_value            = (uint32_t)((origin_val >> (reg->offset - addr)) & writable_mask);
 +                   send_to_hardware_value = (uint32_t) (write_value | ro_value);
 +
 +		}
@@ -84,7 +85,7 @@ index 36e6f93c3..f0695b535 100644
                      rc = reg->u.b.write(s, reg_entry, ptr_val,
                                          read_val >> ((real_offset & 3) << 3),
                                          valid_mask);
-@@ -349,6 +395,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -349,6 +396,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
                  break;
              case 2:
                  if (reg->u.w.write) {
@@ -92,7 +93,7 @@ index 36e6f93c3..f0695b535 100644
                      rc = reg->u.w.write(s, reg_entry, (uint16_t *)ptr_val,
                                          (read_val >> ((real_offset & 3) << 3)),
                                          valid_mask);
-@@ -356,6 +403,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -356,6 +404,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
                  break;
              case 4:
                  if (reg->u.dw.write) {
@@ -100,7 +101,7 @@ index 36e6f93c3..f0695b535 100644
                      rc = reg->u.dw.write(s, reg_entry, (uint32_t *)ptr_val,
                                           (read_val >> ((real_offset & 3) << 3)),
                                           valid_mask);
-@@ -370,6 +418,22 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -370,6 +419,22 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
                  return;
              }
  
