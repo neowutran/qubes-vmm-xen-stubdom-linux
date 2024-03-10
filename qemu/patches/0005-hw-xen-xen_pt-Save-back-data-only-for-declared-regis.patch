@@ -1,5 +1,5 @@
 diff --git a/hw/xen/xen_pt.c b/hw/xen/xen_pt.c
-index 36e6f93c3..b85d566a2 100644
+index 36e6f93c3..a7e89db3e 100644
 --- a/hw/xen/xen_pt.c
 +++ b/hw/xen/xen_pt.c
 @@ -255,6 +255,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
@@ -67,7 +67,7 @@ index 36e6f93c3..b85d566a2 100644
 +                   send_to_hardware_value = (uint32_t) (write_value | ro_value);
 +
 +		}
-+
++                xen_pt_log(d, "NEOWUTRAN QEMU SHOULD WRITE %x %x %x \n", addr + (reg->offset - addr), send_to_hardware_value, reg->size);
 +            }else{
 +                xen_pt_log(d, "NEOWUTRAN QEMU SKIPPING WRITE TO %x \n", addr + (reg->offset - addr));
 +            }
