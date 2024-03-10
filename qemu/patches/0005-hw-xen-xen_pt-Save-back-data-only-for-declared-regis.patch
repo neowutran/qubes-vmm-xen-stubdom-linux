@@ -1,5 +1,5 @@
 diff --git a/hw/xen/xen_pt.c b/hw/xen/xen_pt.c
-index 36e6f93c3..3246060a3 100644
+index 36e6f93c3..2157cb3a8 100644
 --- a/hw/xen/xen_pt.c
 +++ b/hw/xen/xen_pt.c
 @@ -255,6 +255,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
@@ -56,16 +56,16 @@ index 36e6f93c3..3246060a3 100644
 +                   write_value            = (uint8_t)(read_val >> ((real_offset & 3) << 3) & reg->ro_mask);
 +
 +                   // from marmarek patch "2. Not setting value early allows the hooks to see the old value too.", i understand it is better if pci_default_write_config is be called after the calls to "reg->u.x.write("
-+                   send_to_hardware_value = ((uint8_t) (write_value | ro_value);
++                   send_to_hardware_value = (uint8_t) (write_value | ro_value);
 +		}else if (reg->size == 2){
 +                   ro_value               = (*(uint16_t*)(d->config + addr + (reg->offset - addr)) & (~reg->ro_mask));
-+                   write_value            = (uint16_t)(read_val >> ((real_offset & 3) << 3) & reg->ro_mask);
-+                   send_to_hardware_value = ((uint16_t) (write_value | ro_value);
++                   write_value            = (uint16_t) (read_val >> ((real_offset & 3) << 3) & reg->ro_mask);
++                   send_to_hardware_value = (uint16_t) (write_value | ro_value);
 +
 +  		}else{
 +                   ro_value               = (*(uint32_t*)(d->config + addr + (reg->offset - addr)) & (~reg->ro_mask));
 +                   write_value            = (uint32_t)(read_val >> ((real_offset & 3) << 3) & reg->ro_mask);
-+                   send_to_hardware_value = ((uint32_t) (write_value | ro_value);
++                   send_to_hardware_value = (uint32_t) (write_value | ro_value);
 +
 +		}
 +
