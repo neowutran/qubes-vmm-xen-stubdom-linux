@@ -1,5 +1,5 @@
 diff --git a/hw/xen/xen_pt.c b/hw/xen/xen_pt.c
-index 36e6f93c3..ff6fe1ff0 100644
+index 36e6f93c3..ce88afb78 100644
 --- a/hw/xen/xen_pt.c
 +++ b/hw/xen/xen_pt.c
 @@ -255,6 +255,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
@@ -39,11 +39,11 @@ index 36e6f93c3..ff6fe1ff0 100644
 +            if ( reg->size + (reg->offset - addr) <= len ){
 +               uint32_t neo_val;
 +               if ( reg->size == 1 ){
-+			neo_val = ((uint8_t)(read_val >> ((real_offset & 3) << 3)) & reg->ro_mask) | (*(uint8_t*)(d->config + addr + (reg->offset - addr)) ^ reg->ro_mask);
++			neo_val = ((uint8_t)(read_val >> ((real_offset & 3) << 3)) & reg->ro_mask) | (*(uint8_t*)(d->config + addr + (reg->offset - addr)) & (~reg->ro_mask));
 +               }else if ( reg->size == 2 ){
-+                        neo_val = ((uint16_t)(read_val >> ((real_offset & 3) << 3)) & reg->ro_mask) | (*(uint16_t*)(d->config + addr + (reg->offset - addr)) ^ reg->ro_mask);
++                        neo_val = ((uint16_t)(read_val >> ((real_offset & 3) << 3)) & reg->ro_mask) | (*(uint16_t*)(d->config + addr + (reg->offset - addr)) & (~reg->ro_mask));
 +		}else{
-+                        neo_val = (read_val >> ((real_offset & 3) << 3) & reg->ro_mask) | (*(uint32_t*)(d->config + addr + (reg->offset - addr)) ^ reg->ro_mask);
++                        neo_val = (read_val >> ((real_offset & 3) << 3) & reg->ro_mask) | (*(uint32_t*)(d->config + addr + (reg->offset - addr)) & (~reg->ro_mask));
 +               }
 +               xen_pt_log(d, "NEOWUTRAN QEMU ACTUAL WRITE %x %x %x \n", addr + (reg->offset - addr), neo_val, reg->size);
 +               pci_default_write_config(d, addr + (reg->offset - addr), neo_val, reg->size);
