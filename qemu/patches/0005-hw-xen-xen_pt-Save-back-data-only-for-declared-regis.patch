@@ -1,5 +1,5 @@
 diff --git a/hw/xen/xen_pt.c b/hw/xen/xen_pt.c
-index 36e6f93c3..dab1dc779 100644
+index 36e6f93c3..4a6cbcdb1 100644
 --- a/hw/xen/xen_pt.c
 +++ b/hw/xen/xen_pt.c
 @@ -255,6 +255,8 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
@@ -21,7 +21,7 @@ index 36e6f93c3..dab1dc779 100644
  
      /* adjust the read and write value to appropriate CFC-CFF window */
      read_val <<= (addr & 3) << 3;
-@@ -329,19 +332,62 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -329,19 +332,63 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
              uint32_t wp_mask = reg->emu_mask | reg->ro_mask;
  
              valid_mask <<= (find_addr - real_offset) << 3;
@@ -45,31 +45,32 @@ index 36e6f93c3..dab1dc779 100644
 +            // So in that case, we don't write the next register.
 +            if ( reg->size + (reg->offset - addr) <= len ){
 +                uint32_t ro_value = 0, write_value;
++                uint32_t writable_mask = ~reg->ro_mask & ~reg->emu_mask & ~reg->res_mask;
 +                
 +                if (reg->size == 1){
 +                   // Retrieve the register value before any modification, and apply to opposite of the RO mask, to only keep the read only bits
 +                   // I didn't fully understood if "*(uint32_t*)(d->config + addr + (reg->offset - addr))" can be modified by the call to "reg->u.x.write(", so for the moment
 +                   // To be sure, I retrieve the original value before the calls to "reg->u.x.write("
-+                   ro_value               = (*(uint8_t*)(d->config + addr + (reg->offset - addr)) & (~reg->ro_mask));
++                   ro_value               = (*(uint8_t*)(d->config + addr + (reg->offset - addr)) & ~writtable_mask);
 +
 +                   // Get the value that the guest wanted to write on the register, and apply the RO mask to only keep the writable bits
-+                   write_value            = (uint8_t)(read_val >> ((real_offset & 3) << 3) & reg->ro_mask);
++                   write_value            = (uint8_t)(read_val >> ((real_offset & 3) << 3) & writtable_mask);
 +
 +                   // from marmarek patch "2. Not setting value early allows the hooks to see the old value too.", i understand it is better if pci_default_write_config is be called after the calls to "reg->u.x.write("
 +                   send_to_hardware_value = (uint8_t) (write_value | ro_value);
 +		}else if (reg->size == 2){
-+                   ro_value               = (*(uint16_t*)(d->config + addr + (reg->offset - addr)) & (~reg->ro_mask));
-+                   write_value            = (uint16_t) (read_val >> ((real_offset & 3) << 3) & reg->ro_mask);
++                   ro_value               = (*(uint16_t*)(d->config + addr + (reg->offset - addr)) & ~writtable_mask);
++                   write_value            = (uint16_t) (read_val >> ((real_offset & 3) << 3) & writtable_mask);
 +                   send_to_hardware_value = (uint16_t) (write_value | ro_value);
 +
 +  		}else{
-+                   ro_value               = (*(uint32_t*)(d->config + addr + (reg->offset - addr)) & (~reg->ro_mask));
-+                   write_value            = (uint32_t)(read_val >> ((real_offset & 3) << 3) & reg->ro_mask);
++                   ro_value               = (*(uint32_t*)(d->config + addr + (reg->offset - addr)) & ~writtable_mask);
++                   write_value            = (uint32_t)(read_val >> ((real_offset & 3) << 3) & writtable_mask);
 +                   send_to_hardware_value = (uint32_t) (write_value | ro_value);
 +
 +		}
-+                xen_pt_log(d, "NEOWUTRAN QEMU SHOULD WRITE %x %x %x \n", addr + (reg->offset - addr), send_to_hardware_value, reg->size);
-+                 pci_default_write_config(d, addr + (reg->offset - addr), send_to_hardware_value, reg->size);
++                xen_pt_log(d, "NEOWUTRAN QEMU SHOULD WRITE %x %x %x %x \n", addr + (reg->offset - addr), send_to_hardware_value, reg->size, writtable_mask);
++                // pci_default_write_config(d, addr + (reg->offset - addr), send_to_hardware_value, reg->size);
 +
 +            }else{
 +                xen_pt_log(d, "NEOWUTRAN QEMU SKIPPING WRITE TO %x \n", addr + (reg->offset - addr));
@@ -84,7 +85,7 @@ index 36e6f93c3..dab1dc779 100644
                      rc = reg->u.b.write(s, reg_entry, ptr_val,
                                          read_val >> ((real_offset & 3) << 3),
                                          valid_mask);
-@@ -349,6 +395,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -349,6 +396,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
                  break;
              case 2:
                  if (reg->u.w.write) {
@@ -92,7 +93,7 @@ index 36e6f93c3..dab1dc779 100644
                      rc = reg->u.w.write(s, reg_entry, (uint16_t *)ptr_val,
                                          (read_val >> ((real_offset & 3) << 3)),
                                          valid_mask);
-@@ -356,6 +403,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -356,6 +404,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
                  break;
              case 4:
                  if (reg->u.dw.write) {
@@ -100,7 +101,7 @@ index 36e6f93c3..dab1dc779 100644
                      rc = reg->u.dw.write(s, reg_entry, (uint32_t *)ptr_val,
                                           (read_val >> ((real_offset & 3) << 3)),
                                           valid_mask);
-@@ -370,6 +418,22 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -370,6 +419,22 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
                  return;
              }
  
@@ -110,14 +111,14 @@ index 36e6f93c3..dab1dc779 100644
 +            // The code logic will now write the remaining value in the next register.
 +            // If the next register is a dword, then it would be more than the original len (dword < word + dword)
 +            // So in that case, we don't write the next register.
-+           /* if ( reg->size + (reg->offset - addr) <= len ){
++            if ( reg->size + (reg->offset - addr) <= len ){
 +
 +                 xen_pt_log(d, "NEOWUTRAN QEMU ACTUAL WRITE %x %x %x \n", addr + (reg->offset - addr), send_to_hardware_value, reg->size);
 +                 pci_default_write_config(d, addr + (reg->offset - addr), send_to_hardware_value, reg->size);
 +
 +            }else{
 +                xen_pt_log(d, "NEOWUTRAN QEMU SKIPPING WRITE TO %x \n", addr + (reg->offset - addr));
-+            }*/
++            }
 +
 +
              /* calculate next address to find */
