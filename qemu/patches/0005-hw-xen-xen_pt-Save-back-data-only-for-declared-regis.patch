@@ -1,5 +1,5 @@
 diff --git a/hw/xen/xen_pt.c b/hw/xen/xen_pt.c
-index 36e6f93c3..304440705 100644
+index 36e6f93c3..e199eb334 100644
 --- a/hw/xen/xen_pt.c
 +++ b/hw/xen/xen_pt.c
 @@ -255,6 +255,8 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
@@ -70,7 +70,7 @@ index 36e6f93c3..304440705 100644
 +
 +		}
 +                xen_pt_log(d, "NEOWUTRAN QEMU SHOULD WRITE %x %x %x %x \n", addr + (reg->offset - addr), send_to_hardware_value, reg->size, writable_mask);
-+                // pci_default_write_config(d, addr + (reg->offset - addr), send_to_hardware_value, reg->size);
++                pci_default_write_config(d, addr + (reg->offset - addr), send_to_hardware_value, reg->size);
 +
 +            }else{
 +                xen_pt_log(d, "NEOWUTRAN QEMU SKIPPING WRITE TO %x \n", addr + (reg->offset - addr));
@@ -111,14 +111,14 @@ index 36e6f93c3..304440705 100644
 +            // The code logic will now write the remaining value in the next register.
 +            // If the next register is a dword, then it would be more than the original len (dword < word + dword)
 +            // So in that case, we don't write the next register.
-+            if ( reg->size + (reg->offset - addr) <= len ){
++            /*if ( reg->size + (reg->offset - addr) <= len ){
 +
 +                 xen_pt_log(d, "NEOWUTRAN QEMU ACTUAL WRITE %x %x %x \n", addr + (reg->offset - addr), send_to_hardware_value, reg->size);
 +                 pci_default_write_config(d, addr + (reg->offset - addr), send_to_hardware_value, reg->size);
 +
 +            }else{
 +                xen_pt_log(d, "NEOWUTRAN QEMU SKIPPING WRITE TO %x \n", addr + (reg->offset - addr));
-+            }
++            }*/
 +
 +
              /* calculate next address to find */
