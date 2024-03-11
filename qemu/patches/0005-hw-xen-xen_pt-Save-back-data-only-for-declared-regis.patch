@@ -1,124 +1,55 @@
 diff --git a/hw/xen/xen_pt.c b/hw/xen/xen_pt.c
-index 36e6f93c3..bbd8f6fd6 100644
+index 36e6f93c3..340bd8a7d 100644
 --- a/hw/xen/xen_pt.c
 +++ b/hw/xen/xen_pt.c
-@@ -255,6 +255,8 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -255,6 +255,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
      uint32_t find_addr = addr;
      XenPTRegInfo *reg = NULL;
      bool wp_flag = false;
-+    uint32_t send_to_hardware_value = 0;
-+    uint32_t origin_val = val;
++    uint32_t emul_mask = 0, write_val;
  
      if (xen_pt_pci_config_access_check(d, addr, len)) {
          return;
-@@ -310,7 +312,8 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -310,7 +311,6 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
      }
  
      memory_region_transaction_begin();
 -    pci_default_write_config(d, addr, val, len);
-+    
-+    xen_pt_log(d, "NEOWUTRAN QEMU 1: %x ; %x ; val: %x \n", addr, *(uint32_t*)(d->config + addr), val);
  
      /* adjust the read and write value to appropriate CFC-CFF window */
      read_val <<= (addr & 3) << 3;
-@@ -329,19 +332,62 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
-             uint32_t wp_mask = reg->emu_mask | reg->ro_mask;
- 
-             valid_mask <<= (find_addr - real_offset) << 3;
-+            xen_pt_log(d, "NEOWUTRAN QEMU mask1: %x ; %x ; %x ; %x ; %x  \n", reg->emu_mask, reg->ro_mask, wp_mask, valid_mask,reg->offset);
-             ptr_val = (uint8_t *)&val + (real_offset & 3);
-             if (!s->permissive) {
-                 wp_mask |= reg->res_mask;
-             }
-+            xen_pt_log(d, "NEOWUTRAN QEMU mask2: %x ; %x ; %x ; %x ; %x  \n", reg->emu_mask, reg->ro_mask, wp_mask, valid_mask,reg->offset);
-             if (wp_mask == (0xFFFFFFFF >> ((4 - reg->size) << 3))) {
-                 wb_mask &= ~((wp_mask >> ((find_addr - real_offset) << 3))
-                              << ((len - emul_len) << 3));
-             }
-+            xen_pt_log(d, "NEOWUTRAN QEMU mask3: %x ; %x ; %x ; %x ; %x ; RO: %x \n", reg->emu_mask, reg->ro_mask, wp_mask, valid_mask,reg->offset, reg->ro_mask);
-+
-+            // Check to handle the case where
-+            // Guest try to write a dword on a word register
-+            // The code logic detect it is a word and do the correct word write
-+            // The code logic will now write the remaining value in the next register.
-+            // If the next register is a dword, then it would be more than the original len (dword < word + dword)
-+            // So in that case, we don't write the next register.
-+            uint32_t relative_register_offset = reg->offset - addr;
-+            uint32_t register_offset = addr + relative_register_offset;
-+            if ( reg->size + (reg->offset - addr) <= len ){
-+                uint32_t ro_value = 0, write_value;
-+
-+                // what can be written is everything, minus read only field, minus emulated fields, minus reserved fields
-+                uint32_t writable_mask = ~reg->ro_mask & ~reg->emu_mask & ~reg->res_mask;
-+                
-+                if (reg->size == 1){
-+                   // What should not be written
-+                   ro_value               = (*(uint8_t*)(d->config + register_offset) & ~writable_mask);
-+
-+                   // What can be written
-+                   write_value            = (uint8_t)((origin_val >> relative_register_offset) & writable_mask);
-+
-+                   send_to_hardware_value = (uint8_t) (write_value | ro_value);
-+		}else if (reg->size == 2){
-+                   ro_value               = (*(uint16_t*)(d->config + register_offset) & ~writable_mask);
-+                   write_value            = (uint16_t) ((origin_val >> relative_register_offset) & writable_mask);
-+                   send_to_hardware_value = (uint16_t) (write_value | ro_value);
-+  		}else{
-+                   ro_value               = (*(uint32_t*)(d->config + register_offset) & ~writable_mask);
-+                   write_value            = (uint32_t)((origin_val >> relative_register_offset) & writable_mask);
-+                   send_to_hardware_value = (uint32_t) (write_value | ro_value);
-+		}
-+                xen_pt_log(d, "NEOWUTRAN QEMU SHOULD WRITE %x %x %x %x \n", register_offset, send_to_hardware_value, reg->size, writable_mask);
-+                pci_default_write_config(d, register_offset, send_to_hardware_value, reg->size);
-+
-+            }else{
-+                xen_pt_log(d, "NEOWUTRAN QEMU SKIPPING WRITE TO %x \n", addr + (reg->offset - addr));
-+            }
-+
- 
-             /* do emulation based on register size */
-             switch (reg->size) {
-             case 1:
-                 if (reg->u.b.write) {
-+                    xen_pt_log(d, "NEOWUTRAN QEMU byte write: %x ; %x ; %x  \n", read_val >> ((real_offset & 3) << 3), valid_mask, reg->offset);
-                     rc = reg->u.b.write(s, reg_entry, ptr_val,
-                                         read_val >> ((real_offset & 3) << 3),
-                                         valid_mask);
-@@ -349,6 +395,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
-                 break;
-             case 2:
-                 if (reg->u.w.write) {
-+                    xen_pt_log(d, "NEOWUTRAN QEMU word write: %x ; %x ; %x \n", read_val >> ((real_offset & 3) << 3), valid_mask, reg->offset);
-                     rc = reg->u.w.write(s, reg_entry, (uint16_t *)ptr_val,
-                                         (read_val >> ((real_offset & 3) << 3)),
-                                         valid_mask);
-@@ -356,6 +403,7 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
-                 break;
-             case 4:
-                 if (reg->u.dw.write) {
-+                    xen_pt_log(d, "NEOWUTRAN QEMU dword write: %x ; %x ; %x \n", read_val >> ((real_offset & 3) << 3), valid_mask, reg->offset);
-                     rc = reg->u.dw.write(s, reg_entry, (uint32_t *)ptr_val,
-                                          (read_val >> ((real_offset & 3) << 3)),
-                                          valid_mask);
-@@ -370,6 +418,21 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+@@ -370,6 +370,8 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
                  return;
              }
  
-+            // Check to handle the case where
-+            // Guest try to write a dword on a word register
-+            // The code logic detect it is a word and do the correct word write
-+            // The code logic will now write the remaining value in the next register.
-+            // If the next register is a dword, then it would be more than the original len (dword < word + dword)
-+            // So in that case, we don't write the next register.
-+            /*
-+            if ( reg->size + (reg->offset - addr) <= len ){
-+                xen_pt_log(d, "NEOWUTRAN QEMU ACTUAL WRITE %x %x %x \n", register_offset, send_to_hardware_value, reg->size);
-+                pci_default_write_config(d, register_offset, send_to_hardware_value, reg->size);
-+            }else{
-+                xen_pt_log(d, "NEOWUTRAN QEMU SKIPPING WRITE TO %x \n", addr + (reg->offset - addr));
-+            }*/
-+
++            emul_mask |= ( (1 << (reg->size * 8) ) - 1 ) << ((find_addr & 3) * 8);
 +
              /* calculate next address to find */
              emul_len -= reg->size;
              if (emul_len > 0) {
+@@ -396,6 +398,25 @@ static void xen_pt_pci_write_config(PCIDevice *d, uint32_t addr,
+     /* need to shift back before passing them to xen_host_pci_set_block. */
+     val >>= (addr & 3) << 3;
+ 
++    /* store emulated registers after calling their handlers */
++    /*write_val = val;
++    for (index = 0; index < len; index += emul_len) {
++        emul_len = 0;
++        while (emul_mask & 0xff) {
++            emul_len++;
++            emul_mask >>= 8;
++        }
++        if (emul_len) {
++            uint32_t mask = (((uint64_t)1 << (emul_len * 8)) - 1);
++            pci_default_write_config(d, addr + index, write_val & mask, emul_len);
++        } else {
++            emul_mask >>= 8;
++            emul_len = 1;
++        }
++        write_val >>= emul_len * 8;
++    }*/
++    pci_default_write_config(d, addr, val, len);
++
+     memory_region_transaction_commit();
+ 
+ out:
